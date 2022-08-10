@@ -25,12 +25,13 @@ def load_image(path):
     for key in ["date", "year", "month", "day", "code", "time", "imgs"]: # 속성명
         info[f"{key}"] = []
 
-    for month in os.listdir(path):
-        for img_name in os.listdir(path + "/" + month):
-            c, y, m, dd, t = img_name.replace(".", "_").split("_") # 정보 추출(코드, 년도, 월, 일, 시간)
-            img = cv.read_img(img_name, cv.IMREAD_COLOR) # img_name인 이미지 호출
-            print(type(img)); exit()
-            for k, v in [("date", "-".join(str, [y, m, dd])), ("year", y), ("month", m), ("day", dd), ("code", c), ("time", t), ("imgs", img)]: # (키, 값)
+    for month in sorted(os.listdir(path)):
+        if month.count(".") != 0: continue
+        print(f"start {month}")
+        for img_name in sorted(os.listdir(path + "/" + month)):
+            c, y, m, dd, t, *_ = img_name.replace(".", "_").split("_") # 정보 추출(코드, 년도, 월, 일, 시간)
+            img = cv.imread(path + "/" + month + "/" + img_name, cv.IMREAD_COLOR) # img_name인 이미지 호출
+            for k, v in [("date", "-".join([y, m, dd])), ("year", y), ("month", m), ("day", dd), ("code", c), ("time", t), ("imgs", img)]: # (키, 값)
                 info[f"{k}"].append(v)
 
     for key in ["date", "year", "month", "day", "code", "time"]: # 속성명
