@@ -49,7 +49,24 @@ def load_roi(imgs, mask):
     return new_imgs
 
 
+# 연도 데이터 가져오기
+def load_csv(path):
+    df = pd.read_csv(path)
+
+    x = [i for i in range(9, 365, 16)] # 아쿠아는 9일부터 16일씩
+    # 클래스별 일일 평균값 불러오기
+    y0 = df[df["class"] == 0]["avg"].to_list()
+    y1 = df[df["class"] == 1]["avg"].to_list()
+    y2 = df[df["class"] == 2]["avg"].to_list()
+    y3 = df[df["class"] == 3]["avg"].to_list()
+
+    return x, y0, y1, y2, y3
+
+
 # csv 파일에서 이미지 가져오기
+def load_image_for_csv():
+    pass
+
 
 '''
 저장 메소드 모음
