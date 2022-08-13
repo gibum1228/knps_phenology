@@ -30,7 +30,7 @@ def save_sequence_csv(db, info):
     # 파일 저장
     df.to_csv(root + "ori_data" + middle + f"{'_'.join([year, code, modis[:3]])}.csv")
     # 일별 데이터 초기화
-    db = init_db(4, column)
+    db = init_db(4)
 
     return db
 
@@ -41,13 +41,13 @@ QGIS에서 뽑아낸 csv 파일에 있는 클래스별 일일 데이터에서 EV
 def data_preprocessing(dir_name):
     # 변수 초기화
     last_info = None  # 계산중인 '연도_코드_위성'
-    db = init_db(4, column)  # 일별 데이터
+    db = init_db(4)  # 일별 데이터
     dir_list = sorted(os.listdir(root + dir_name))  # 파일 목록
     if middle == "/": dir_list.pop(0) # 맥북이라면 .DS_Store를 삭제
 
     # 파일 개수만큼 반복
     for n in range(len(dir_list)):
-        if n // 100 % 0: print(f"{len(dir_list)}개 중 {n}개 작업중.......")
+        if n % 100 == 0: print(f"{len(dir_list)}개 중 {n}개 작업중.......")
         filename = dir_list[n]  # 파일 이름 가져오기
         after_filename = filename.replace("_", ".")  # 파일명 전처리 후
 
@@ -98,6 +98,7 @@ def data_preprocessing(dir_name):
 def merge_8day(dir_name):
     path = root + dir_name + middle
     dir_list = sorted(os.listdir(root + dir_name)) # 파일 목록 가져오기
+    if middle == "/": dir_list.pop(0) # 맥북이라면 .DS_Store를 삭제
 
     for n in range(0, len(dir_list), 2): # 2개가 한 세트이기 떄문에 반복문이 2씩 증가
         # 테라, 아쿠아 파일 이름 가져오기
@@ -117,13 +118,15 @@ def merge_8day(dir_name):
         df.reset_index(drop=True, inplace=True) # 인덱스 초기화
 
         # 알맞은 파일명으로 저장
-        df.to_csv(f"{root}8_day_data{middle}{year}_{code}_final.csv")
+        df.to_csv(f"{root}day_8_data{middle}{year}_{code}_final.csv")
 
 
 '''전역 변수'''
 root = "/Users/beom/Desktop/git/data/knps/" # csv 파일 위치
 middle = "/" if platform.system() == "Darwin" else "\\" # 운영체제에 따라 슬래쉬 설정
 column = ["date", "code", "class", "avg"] # 최종 파일 컬럼
+ori_data_list = os.listdir(root + "ori_data")
+day_8_list = os.listdir(root + "day_8_data")
 
 '''
 일별 데이터 == db
