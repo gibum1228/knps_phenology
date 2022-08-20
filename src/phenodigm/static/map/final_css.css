@@ -1,21 +1,42 @@
 body {
+    margin: 0;
+    padding: 0;
+}
+
+.parentLayer {
     width: 100%;
     height: 100vh;
-    display: inline-block;
+    background: yellow;
 }
 
 .leftLayer {
-    width: 50px;
-    height: 50px;
-    display: inline-block;
+    width: 300px;
+    height: 100%;
+    float: left;
     background: aqua;
 }
 
+.mainBtn {
+
+}
+
 .middleLayer {
-    width: 800px;
-    height: 500px;
-    display: inline-block;
+    width: 900px;
+    height: 100%;
+    float: left;
     background: red;
+    text-align: center;
+}
+
+.middleLayer #map {
+    padding-top: 50px;
+}
+
+.rightLayer {
+    float: right;
+    width: 230px;
+    height: 100%;
+    background: green;
 }
 
 .optionBtn {

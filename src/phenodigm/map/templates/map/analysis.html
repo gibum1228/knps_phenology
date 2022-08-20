@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>국립공원공단 페노다임</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'map/final_css.css' %}">
+</head>
+<body>
+    <div class="parentLayer">
+        <div class="leftLayer">
+            <ul>
+                <li><a href="/">홈</a></li>
+                <li><a href="/analysis/">분석</a></li>
+                <li><a href="/predict/">예측</a></li>
+            </ul>
+            <p>
+                Phenodigm<br>
+                ver 1.0.0
+            </p>
+        </div>
+        <div class="middleLayer">
+            <form method="get" action="/analysis/" id="optionForm">
+                <select name={{ mountain }} form="optionForm">
+                    <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
+                    <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
+                    <option value="dadohae">다도해상</option> <option value="deogyu">덕유산</option>
+                    <option value="mudeung">무등산</option> <option value="byeonsan">변산반도</option>
+                    <option value="bukhan">북한산</option> <option value="seorak">설악산</option>
+                    <option value="sobaek">소백산</option> <option value="songni">속리산</option>
+                    <option value="odae">오대산</option> <option value="worak">월악산</option>
+                    <option value="wolchul">월출산</option> <option value="halla">한라산</option>
+                    <option value="juwang">주왕산</option> <option value="jiri">지리산</option>
+                    <option value="chiak">치악산</option> <option value="taebaek">태백산</option>
+                    <option value="taean">태안해안</option> <option value="hallyeo">한려해상</option>
+                    <option value="" selected></option>
+                </select>
+            </form>
+            <button type="submit" form="optionForm">확인</button>
+        </div>
+    </div>
+</body>
+</html>
