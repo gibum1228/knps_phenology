@@ -10,42 +10,12 @@
     <script>
         $(document).ready(function() {
             $( "select[name=mountain]" ).val( "{{ mountain }}" );
-            $('select[name=mountain]').change(function () {
-                console.log($('select[name=mountain]').val());
-                mountain = $('select[name=mountain]').val();
-            });
-        });
-
-        $(document).ready(function() {
             $( "select[name=class_num]" ).val( "{{ class_num }}" );
-            $('select[name=class_num]').change(function () {
-                console.log($('select[name=class_num]').val());
-                class_num = $('select[name=class_num]').val();
-            });
-        });
-
-        $(document).ready(function() {
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
-            $('select[name=start_year]').change(function () {
-                console.log($('select[name=start_year]').val());
-                start_year = $('select[name=start_year]').val();
-            });
-        });
-
-        $(document).ready(function() {
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
-            $('select[name=end_year]').change(function () {
-                console.log($('select[name=end_year]').val());
-                end_year = $('select[name=end_year]').val();
-            });
-        });
-
-        $(document).ready(function() {
             $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
-            $('select[name=curve_fit]').change(function () {
-                console.log($('select[name=curve_fit]').val());
-                curve_fit = $('select[name=curve_fit]').val();
-            });
+            $( "input[name=threshold]" ).val( "{{ threshold }}" );
+            $("#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
 </head>
@@ -54,7 +24,7 @@
         <div class="leftLayer">
             <ul>
                 <li><a href="/">홈</a></li>
-                <li><a href="/analysis/?start_year=2003&end_year=2003">분석</a></li>
+                <li><a href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a></li>
                 <li><a href="/predict/">예측</a></li>
             </ul>
             <p>
@@ -81,7 +51,7 @@
                 </select>
                 <b>start_year</b>
                 <select name="start_year">
-                    <option value="2003" selected>2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
+                    <option value="2003">2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
                     <option value="2006">2006</option> <option value="2007">2007</option> <option value="2008">2008</option>
                     <option value="2009">2009</option> <option value="2010">2010</option> <option value="2011">2011</option>
                     <option value="2012">2012</option> <option value="2013">2013</option> <option value="2014">2014</option>
@@ -91,7 +61,7 @@
                 </select>
                 <b>end_year</b>
                 <select name="end_year">
-                    <option value="2003" selected>2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
+                    <option value="2003">2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
                     <option value="2006">2006</option> <option value="2007">2007</option> <option value="2008">2008</option>
                     <option value="2009">2009</option> <option value="2010">2010</option> <option value="2011">2011</option>
                     <option value="2012">2012</option> <option value="2013">2013</option> <option value="2014">2014</option>
@@ -101,18 +71,19 @@
                 </select>
                 <b>class_num</b>
                 <select name="class_num">
-                    <option value="" selected></option> <option value="0">초지</option>
-                    <option value="1">침엽수림</option> <option value="2">활엽수림</option> <option value="3">혼효림</option>
+                    <option value="0">초지</option> <option value="1">침엽수림</option>
+                    <option value="2">활엽수림</option> <option value="3">혼효림</option>
                 </select>
                 <br><b>curve_fit</b>
                 <select name="curve_fit">
-                    <option value="" selected></option> <option value="1">다중 로지스틱 함수</option>
-                    <option value="2">푸리에 변환</option> <option value="3">Savitzly-Golay</option> <option value="4">가우시안</option>
+                    <option value="1" selected>다중 로지스틱 함수</option> <option value="2">푸리에 변환</option>
+                    <option value="3">Savitzly-Golay</option> <option value="4">가우시안</option>
                 </select>
                 <b>threshold</b>
-                <input type="text" name="threshold">
+                <input type="number" name="threshold">
                 <b>그래프 모양</b>
-                
+                <label><input type="radio" name="shape" id="shape1" value="1">연속</label>
+                <label><input type="radio" name="shape" id="shape2" value="2">연도</label>
             </form>
             <button type="submit" form="optionForm">확인</button>
         </div>

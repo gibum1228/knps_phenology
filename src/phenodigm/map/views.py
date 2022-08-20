@@ -29,7 +29,7 @@ def index(request):
     for i in range(len(name)):
         # 이미지 가져오기
         pic = base64.b64encode(open(f'../resource/{name[i]}.png', 'rb').read()).decode()
-        image_tag = f'<div style="text-align:center; "><a href="http://127.0.0.1:8000/analysis/?mountain={name[i]}&start_year=2003&end_year=2003" target="_top"><img src="data:image/png;base64,{pic}" width="200" height="150"></a></div>'
+        image_tag = f'<div style="text-align:center; "><a href="http://127.0.0.1:8000/analysis/?mountain={name[i]}&start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" target="_top"><img src="data:image/png;base64,{pic}" width="200" height="150"></a></div>'
         # iframe 생성
         iframe = folium.IFrame(image_tag, width=220, height=170)
         # html 띄울 popup 객체 생성
