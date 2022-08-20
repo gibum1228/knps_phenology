@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>국립공원공단 레인져스</title>
+    <meta name="viewport" content="width=device-width">
+    <title>국립공원공단 레인저스</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'map/final_css.css' %}">
 </head>
 <body>
-    <div style="width: 300px">
+    <div style="display: inline-block; background: yellow">
+        <div class="leftLayer">
 
-    </div>
-    <div>
-        <iframe src="map.html" name="map" width="100%" height="100%">
-            <p>
-                Folium으로 만들어진 지도 API
-            </p>
-        </iframe>
-    </div>
-    <div>
-
+        </div>
+        <div class="middleLayer">
+            <div id="map">
+                {{map | safe}}
+            </div>
+        </div>
     </div>
 </body>
 </html>
