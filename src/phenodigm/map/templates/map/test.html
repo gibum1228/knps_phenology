@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Django Wrapper | FusionCharts</title>
+    {% load static %}
+    <script
+      type="text/javascript"
+      src="{% static 'map/js/fusioncharts.js' %}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"
+    ></script>
+  </head>
+  <body>
+    <!-- FusionCharts will render here-->
+    <div id="chart-1"></div>
+    <!-- dumping JavaScript code here -->
+    {{ graph |safe }}
+  </body>
+</html>
