@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>국립공원공단 레인저스</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'map/final_css.css' %}">
+</head>
+<body>
+    <div class="parentLayer">
+        <div class="leftLayer">
+            <ul>
+                <li>홈</li>
+                <li>분석</li>
+                <li>예측</li>
+            </ul>
+            <p>
+                Phenodigm<br>
+                ver 1.0.0
+            </p>
+        </div>
+        <div class="middleLayer">
+            <h1>빅리더 7시 국립공원공단 레인저스 - 페노다임</h1>
+            <div id="map">
+                {{map | safe}}
+            </div>
+        </div>
+        <div class="rightLayer">
+            이미지 들어갈 자리
+        </div>
+    </div>
+</body>
+</html>

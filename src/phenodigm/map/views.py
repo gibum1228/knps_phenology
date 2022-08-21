@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 import django
@@ -28,8 +29,7 @@ def index(request):
     for i in range(len(name)):
         # 이미지 가져오기
         pic = base64.b64encode(open(f'../resource/{name[i]}.png', 'rb').read()).decode()
-        image_tag = '<div style="text-align:center; "><img src="data:image/png;base64,{}" width="200" height="150"></div>'.format(
-            pic)
+        image_tag = f'<div style="text-align:center; "><a href="http://127.0.0.1:8000/analysis/?mountain={name[i]}&start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" target="_top"><img src="data:image/png;base64,{pic}" width="200" height="150"></a></div>'
         # iframe 생성
         iframe = folium.IFrame(image_tag, width=220, height=170)
         # html 띄울 popup 객체 생성
@@ -45,3 +45,19 @@ def index(request):
     maps = m._repr_html_()  # 지도를 템플릿에 삽입하기위해 iframe이 있는 문자열로 반환 (folium)
 
     return render(request, 'map/index.html', {'map': maps})
+
+
+def analysis(request):
+    property_list = ["mountain", "curve_fit", "start_year", "end_year", "class_num", "threshold", "shape"]
+
+    db = {}
+
+    if request.method == 'GET':
+        for key in property_list:
+            db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
+    print(request.GET)
+    return render(request, 'map/analysis.html', db)
+
+
+def predict(request):
+    pass

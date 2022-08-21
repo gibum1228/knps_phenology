@@ -4,18 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
-    <title>국립공원공단 레인저스</title>
+    <title>국립공원공단 페노다임</title>
     <link rel="stylesheet" type="text/css" href="{% static 'map/final_css.css' %}">
 </head>
 <body>
-    <div style="display: inline-block; background: yellow">
+    <div class="parentLayer">
         <div class="leftLayer">
-
+            <ul>
+                <li><a href="/">홈</a></li>
+                <li><a href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a></li>
+                <li><a href="/predict/">예측</a></li>
+            </ul>
+            <p>
+                Phenodigm<br>
+                ver 1.0.0
+            </p>
         </div>
         <div class="middleLayer">
+            <h1>빅리더 7시 국립공원공단 레인저스 - 페노다임</h1>
             <div id="map">
                 {{map | safe}}
             </div>
+        </div>
+        <div class="rightLayer">
+            이미지 들어갈 자리
         </div>
     </div>
 </body>
