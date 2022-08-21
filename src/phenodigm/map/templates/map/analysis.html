@@ -9,7 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            $( "select[name=mountain]" ).val( "{{ mountain }}" );
+            $( "select[name=knps]" ).val( "{{ knps }}" );
             $( "select[name=class_num]" ).val( "{{ class_num }}" );
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
@@ -18,6 +18,8 @@
             $("#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
+    <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
@@ -33,9 +35,12 @@
             </p>
         </div>
         <div class="middleLayer">
+            <div id="chart-1">
+                {{ graph | safe }}
+            </div>
             <form method="get" action="/analysis/" id="optionForm">
                 <b>mountain</b>
-                <select name="mountain">
+                <select name="knps">
                     <option value="" selected></option>
                     <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
                     <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
