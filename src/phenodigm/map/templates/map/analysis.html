@@ -1,294 +1,11 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
+
 <style>
-    @font-face {
-    font-family: 'BMJUA';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    }
-
-    body {
-    font-family: 'BMJUA';
-    font-size: 30px;
-
-    margin: 0;
-    padding: 0;
-
-    min-height:1920px;
-    min-width:1080px;
-    }
-
-    .parentLayer {
-    width: 1920px;
-    height: 1080px;
-    }
-
-    .leftLayer{
+    #chart-1{
     position: absolute;
-    width: 220px;
-    height: 1080px;
-    left: 0px;
-    top: 0px;
-
-    background-color:#DBE2EF;
-    }
-
-
-    .home_area{
-    position: absolute;
-    width: 100%;
-    height:8%;
-    left: 0%;
-    top:37%;
-    }
-
-    .home_img{
-    position: absolute;
-    left: 20%;
-    top: 20%;
-    }
-
-    .home_btn{
-    position: absolute;
-    left: 60%;
-    top: 30%;
-    }
-
-    .analysis_area{
-    position: absolute;
-    width: 100%;
-    height:8%;
-    left: 0%;
-    top:45%;
-    background-color:#F9F7F7;
-    border-radius: 26px;
-    }
-
-    .analysis_img{
-    position: absolute;
-    left: 20%;
-    top: 20%;
-    }
-
-
-    .analysis_btn{
-    position: absolute;
-    left: 60%;
-    top: 30%;
-    }
-
-    .predict_area{
-    position: absolute;
-    width: 100%;
-    height: 8%;
-    top:53%;
-    }
-
-    .predict_img{
-    position: absolute;
-    left: 20%;
-    top: 20%;
-    }
-
-    .predict_btn{
-    position: absolute;
-    left: 60%;
-    top: 30%;
-    }
-
-
-    .ver{
-    position: absolute;
-    left:15%;
-    top:80%;
-    }
-
-    .middleLayer{
-    position: absolute;
-    width: 1700px;
-    height: 1080px;
-    left: 220px;
-    top: 0px;
-    background-color: #F9F7F7;
-    }
-
-    .settingLayer{
-    position: absolute;
-    width: 1080px;
-    height: 530px;
-    left: 20px;
-    top: 535px;
-    background: #DBE2EF;
-    border-radius: 26px;
-
-
-
-    }
-
-    .graphLayer{
-    position: absolute;
-    width: 1080px;
-    height: 495px;
-    left: 20px;
-    top: 20px;
-    background: #DBE2EF;
-    border-radius: 26px;
-    }
-
-    .exportLayer{
-    position: absolute;
-    width: 500px;
-    height: 230px;
-    top: 20px;
-    left: 1125px;
-
-    background:#DBE2EF;
-    border-radius: 26px;
-    }
-
-
-    .exportTitle{
-    position: absolute;
-    left:85px;
-    top:10px;
-    font-size: 50px;
-    }
-
-    .csv_btn{
-    position: absolute;
-    width:400px;
-    height:50px;
-    left:50px;
-    top: 80px;
-    }
-
-    .img_btn{
-    position: absolute;
-    width:400px;
-    height:50px;
-    left: 50px;
-    top: 160px;
-    }
-
-    .DOYoutpuLayer{
-    position: absolute;
-    width: 500px;
-    height: 240px;
-    left: 1125px;
-    top: 275px;
-    background: #3F72AF;
-    border-radius: 26px;
-    }
-
-    .DOY_Title{
-    position: absolute;
-    left:180px;
-    top: 10px;
-    font-size: 50px;
-
-    }
-
-    .settingTitle{
-    position: absolute;
-    left:45%;
-    top: 5%;
-    font-size: 50px;
-    }
-
-    .mountainTitle {
-    position: absolute;
-    left: 100px;
-    top: 22%;
-    }
-
-    .mountainBar{
-    position: absolute;
-    left: 220px;
-    top: 23%;
-    }
-
-    .startTitle{
-    position: absolute;
-    left: 390px;
-    top: 22%;
-    }
-
-    .start_year{
-    position: absolute;
-    width:80px;
-    height:20px;
-    left: 470px;
-    top: 23%;
-    }
-
-    .endTitle{
-    position: absolute;
-    left: 565px;
-    top: 22%;
-    }
-
-    .end_year{
-    position: absolute;
-    width:80px;
-    height:20px;
-    left: 600px;
-    top: 23%;
-    }
-
-    .classTitle{
-    position: absolute;
-    left: 72%;
-    top: 22%;
-    }
-
-    .class_num{
-    position: absolute;
-    left: 900px;
-    top: 125px;
-    }
-
-    .curve_fittingTitle{
-    position: absolute;
-    left: 100px;
-    top: 280px;
-    }
-
-    .curve_fit{
-    position: absolute;
-    left: 120px;
-    top: 320px;
-    }
-
-    .thresholdTitle{
-    position: absolute;
-    left: 470px;
-    top: 280px;
-    }
-
-    .threshold{
-    position: absolute;
-    left: 440px;
-    top: 320px;
-    }
-
-    .graphShape{
-    position: absolute;
-    left: 75%;
-    top: 50%;
-    width:130px;
-    height:87px;
-
-    }
-
-    .submit_btn{
-    position: absolute;
-    width:200px;
-    height:40px;
-    left:425px;
-    top:90%;
-    border-radius: 26px;
+    top: 25px;
     }
 </style>
 
@@ -296,11 +13,13 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
+    <link rel="stylesheet" href="{%static 'map/analysis_css.css'%}">
     <title>국립공원공단 페노다임</title>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            $( "select[name=mountain]" ).val( "{{ mountain }}" );
+            $( "select[name=knps]" ).val( "{{ knps }}" );
             $( "select[name=class_num]" ).val( "{{ class_num }}" );
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
@@ -309,32 +28,43 @@
             $("#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
+    <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-                <div class="home_area">
-                    <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
-                    <a class="home_btn" href="/">홈</a>
-                </div>
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
+            <div class="home_area">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+                <a class="home_btn" href="/">홈</a>
+            </div>
 
-                <div class="analysis_area">
-                    <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
-                    <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
-                </div>
+            <div class="analysis_area">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
+                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
+            </div>
 
-                <div class="predict_area">
-                    <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                    <a class="predict_btn" href="/predict/">예측</a>
-                </div>
+            <div class="predict_area">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
+                <a class="predict_btn" href="/predict/">예측</a>
+            </div>
+
+            <div class="phenocam_area">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+                <a class="phenocam_btn" href="/phenocam/">카메라</a>
+            </div>
             <p class="ver">
                 Phenodigm<br>
                 ver 1.0.0
             </p>
         </div>
         <div class="middleLayer">
+            <img class="love_img" src="{%static 'map/icon/졸려반달.png'%}" alt="My Image" style="position:absolute; left:1150px; top:550px; width:500px">
             <div class="graphLayer">
-
+                <div id="chart-1">
+                    {{ graph | safe }}
+                </div>
             </div>
 
             <div class="exportLayer">
@@ -421,8 +151,6 @@
                 <button class="submit_btn" type="submit" form="optionForm">분석</button>
                 </div>
         </div>
-
-
     </div>
 </body>
 </html>
