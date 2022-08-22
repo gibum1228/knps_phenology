@@ -1,0 +1,154 @@
+@font-face {
+    font-family: 'BMJUA';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    }
+
+    body {
+    font-family: 'BMJUA';
+    font-size: 30px;
+
+    margin: 0;
+    padding: 0;
+
+    min-height:1920px;
+    min-width:1080px;
+    }
+
+
+    .parentLayer {
+    width: 1920px;
+    height: 1080px;
+    }
+
+    .leftLayer{
+    position: absolute;
+    width: 220px;
+    height: 1080px;
+    left: 0px;
+    top: 0px;
+
+    background-color:#DBE2EF;
+    }
+
+
+    .home_area{
+    position: absolute;
+    width: 100%;
+    height:8%;
+    left: 0%;
+    top:37%;
+    background-color:#F9F7F7;
+    border-radius: 26px;
+    }
+
+    .home_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .home_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .analysis_area{
+    position: absolute;
+    width: 100%;
+    height:8%;
+    left: 0%;
+    top:45%;
+
+    }
+
+    .analysis_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+
+    .analysis_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .predict_area{
+    position: absolute;
+    width: 100%;
+    height: 8%;
+    top:53%;
+    }
+
+    .predict_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .predict_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .phenocam_area{
+    position: absolute;
+    width: 100%;
+    height: 8%;
+    top:61%;
+    }
+
+    .phenocam_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .phenocam_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+
+    .ver{
+    position: absolute;
+    left:15%;
+    top:80%;
+    }
+
+    .middleLayer{
+    position: absolute;
+    width: 1700px;
+    height: 1080px;
+    left: 220px;
+    top: 0px;
+    background-color: #F9F7F7;
+    }
+
+
+    .page_title{
+    position: absolute;
+    left: 20px;
+
+    }
+
+    #map{
+    position: absolute;
+    width: 1200px;
+    height: 900px;
+    left: 20px;
+    top: 150px;
+    }
+
+
+    .Bandal_img{
+    position: absolute;
+    left: 70%;
+    top: 400px;
+    }
