@@ -60,4 +60,12 @@ def analysis(request):
 
 
 def predict(request):
-    pass
+    property_list = ["mountain", "curve_fit", "start_year", "end_year", "class_num", "threshold"]
+
+    db = {}
+
+    if request.method == 'GET':
+        for key in property_list:
+            db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
+    print(request.GET)
+    return  render(request, 'map/predict.html', db)
