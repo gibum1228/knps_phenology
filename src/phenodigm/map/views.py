@@ -124,14 +124,14 @@ def get_chart(ori_db):
     timeSeries = TimeSeries(fusionTable) # 타임시리즈 만들기
 
     # 그래프 속성 설정하기
-    timeSeries.AddAttribute('chart', '{"exportEnabled": "1"}')
     timeSeries.AddAttribute('caption', '{"text":"식생지수 분석"}')
+    timeSeries.AddAttribute('chart', '{"theme":"candy", "exportEnabled": "1"}')
     timeSeries.AddAttribute('subcaption', '{"text":"국립공원공단 레인저스"}')
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
 
     # 그래프 그리기
-    fcChart = FusionCharts("timeseries", "ex1", 1080, 450, "chart-1", "json", timeSeries)
+    fcChart = FusionCharts("timeseries", "ex1", 1180, 450, "chart-1", "json", timeSeries)
 
     # 그래프 정보 넘기기
     return  fcChart.render()
@@ -145,7 +145,7 @@ def get_multi_plot(ori_db):
     db = {
         "chart": { # 그래프 속성
             "exportEnabled": "1",
-            "bgColor": "#DBE2EF",
+            "bgColor": "#262A33",
             "bgAlpha": "100",
             "showBorder": "0",
             "showvalues": "0",
@@ -153,7 +153,7 @@ def get_multi_plot(ori_db):
             "caption": "식생지수 분석",
             "subcaption": "국립공원공단 레인저스",
             "yaxisname": "EVI",
-            "theme": "fusion",
+            "theme": "candy",
             "drawAnchors": "0",
             "plottooltext": "<b>$dataValue</b> EVI of $label",
 
@@ -173,7 +173,7 @@ def get_multi_plot(ori_db):
         })
 
     # 그래프 그리기
-    chartObj = FusionCharts('scrollline2d', 'ex1', 1080, 450, 'chart-1', 'json', json.dumps(db))
+    chartObj = FusionCharts('scrollline2d', 'ex1', 1180, 450, 'chart-1', 'json', json.dumps(db))
 
     return chartObj.render() # 그래프 정보 넘기기
 

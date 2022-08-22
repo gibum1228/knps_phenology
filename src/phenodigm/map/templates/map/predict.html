@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
-    <link rel="stylesheet" href="{%static 'map/predict_css.css'%}">
+    <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
     <title>국립공원공단 레인저스</title>
 </head>
 <body>
@@ -22,9 +22,9 @@
                 <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
             </div>
 
-            <div class="predict_area">
+            <div class="predict_area" style="background-color:#f2f2eb; border-radius: 26px;">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                <a class="predict_btn" href="/predict/">예측</a>
+                <a class="predict_btn" href="/predict/" style="color:black">예측</a>
             </div>
 
             <div class="phenocam_area">
@@ -37,30 +37,24 @@
             </p>
         </div>
         <div class="middleLayer">
-            <img class="love_img" src="{%static 'map/icon/기웃반달.png'%}" alt="My Image" style="position:absolute; left:1150px; top:550px; width:500px">
+            <img class="love_img" src="{%static 'map/icon/기웃반달.png'%}" alt="My Image" style="position:absolute; left:1190px; top:550px; width:500px">
             <div class="graphLayer">
-
+                <div id="chart-1">
+                    {{ graph | safe }}
+                </div>
             </div>
 
-            <div class="exportLayer">
-                <b class="exportTitle">분석결과 내보내기</b>
-                <form method="get" action="/analysis/" id="exportForm">
-                    <button class="csv_btn" type="submit" form="exportForm" name="csv">csv</button>
-                    <button class="img_btn" type="submit" form="exportForm" name="img">img</button>
-                </form>
-            </div>
-
-            <div class="DOYoutpuLayer">
+            <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
             </div>
 
             <div class="settingLayer">
                 <div class="settingTitle">
-                    <b>설정 :</b>
+                    <b>그래프 설정</b>
                 </div>
                 <form method="get" action="/analysis/" id="optionForm">
                     <div>
-                        <b class="mountainTitle">국립공원 :</b>
+                        <b class="mountainTitle">국립공원</b>
                     </div>
                     <select class="mountainBar" name="mountain">
                         <option value="" selected></option>
@@ -76,7 +70,7 @@
                         <option value="chiak">치악산</option> <option value="taebaek">태백산</option>
                         <option value="taean">태안해안</option> <option value="hallyeo">한려해상</option>
                     </select>
-                    <b class="startTitle">기간 :</b>
+                    <b class="startTitle">기간</b>
                     <select class="start_year" name="start_year">
                         <option value="2003">2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
                         <option value="2006">2006</option> <option value="2007">2007</option> <option value="2008">2008</option>
@@ -96,7 +90,7 @@
                         <option value="2018">2018</option> <option value="2019">2019</option> <option value="2020">2020</option>
                         <option value="2021">2021</option>
                     </select>
-                    <b class="classTitle">산림종류 :</b>
+                    <b class="classTitle">산림종류</b>
                     <select class="class_num" name="class_num">
                         <option value="0">0. 초지</option> <option value="1">1. 침엽수림</option>
                         <option value="2">2. 활엽수림</option> <option value="3">3. 혼효림</option>
