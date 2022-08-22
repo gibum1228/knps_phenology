@@ -36,8 +36,10 @@ def load_data():
                 day = 1
 
     new_df = pd.DataFrame()
-    new_df["date"] = pd.to_datetime(x, format="%Y-%m-%d")
+    new_df["ds"] = pd.to_datetime(x, format="%Y-%m-%d")
     new_df["y"] = y
+    new_df["index"] = new_df["ds"]
+    new_df.set_index("index", inplace=True)
 
     return new_df
 
@@ -61,7 +63,16 @@ def fit_arima():
 def fit_prophet():
     df = load_data()
 
-    print(df)
+    model = Prophet()
+    # model.stan_backend.set_options(newton_fallback=False)
+    model.fit(df, algorithm='Newton')
+
+    df_forecast = model.make_future_dataframe(periods=365)
+    print(df_forecast.tail())
+
+    # df_forecast = model.predict(df_forecast)
+
+    # df_prophet.plot(df_forecast, xlabel="date", ylabel="evi")
 
 
 def fit_random_forest():
