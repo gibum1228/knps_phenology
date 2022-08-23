@@ -62,6 +62,12 @@ def load_csv(path):
     return x, y0, y1, y2, y3
 
 
+def get_knps_name():
+    name = ["gaya", "gyeongju", "gyeryong", "naejang", "dadohae", "deogyu", "mudeung", "byeonsan", "bukhan", "seorak",
+            "sobaek", "songni", "odae", "worak", "wolchul", "juwang", "jiri", "chiak", "taebaek", "taean", "halla", "hallyeo"]
+
+    return name
+
 '''
 저장 메소드 모음
 '''
