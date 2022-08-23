@@ -1,5 +1,3 @@
-import math
-
 import torch
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -9,45 +7,31 @@ from prophet import Prophet
 import pandas as pd
 import numpy as np
 import os
+import platform
 import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset # 텐서데이터셋
-from torch.utils.data import DataLoader # 데이터로더
+from torch.utils.data import TensorDataset  # 텐서데이터셋
+from torch.utils.data import DataLoader  # 데이터로더
+import data_preprocessing as dp
 
+# 전역변수
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이토치 gpu로 돌리기
+middle = "/" if platform.system() == "Darwin" else "\\" # 운영체제에 따라 슬래쉬 설정
+root = os.getcwd() + middle
 
-'''데이터를 로드하는 메소드'''
-def load_data(knps, class_num):
-    df = pd.read_csv(os.getcwd() + "/data/knps_final.csv")  # 데이터 가져오기
-
-    # 조건에 맞는 데이터 추출
-    return df[(df["code"] == knps) & (df["class"] == class_num)].sort_values('date')
-
-
-'''윤년 구하는 메소드'''
-def get_Feb_day(year):
-    # 4, 100, 400으로 나누어 떨어진다면 윤년
-    if year % 4 == 0 or year % 100 == 0 or year % 400 == 0:
-        day = 29
-    else:
-        day = 28
-
-    return day
-
-
-'''해당하는 모델로 학습하는 메소드'''
 def fit_arima():
     pass
 
 
 def fit_prophet():
-    df = load_data()
+    df = dp.load_final_data()
 
     model = Prophet()
     # model.stan_backend.set_options(newton_fallback=False)
     model.fit(df, algorithm='Newton')
 
-    forecast = 730 # forecast만큼 이후를 예측
-    df_forecast = model.make_future_dataframe(periods=forecast) # 예측할 ds 만들기
-    df_forecast = model.predict(df_forecast) # 비어진 ds만큼 예측
+    forecast = 730  # forecast만큼 이후를 예측
+    df_forecast = model.make_future_dataframe(periods=forecast)  # 예측할 ds 만들기
+    df_forecast = model.predict(df_forecast)  # 비어진 ds만큼 예측
 
     # 시각화
     # model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(25, 15))
@@ -58,151 +42,168 @@ def fit_random_forest():
     pass
 
 
-def fit_LSTM():
-    df = load_data("gaya", 0)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# LSTM 네트워크 구조
+class LSTM(torch.nn.Module):
+    # 기본변수, layer를 초기화해주는 생성자
+    def __init__(self, hidden_dim, step, output_dim, layers, dropout):
+        super(LSTM, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.step = step
+        self.output_dim = output_dim
+        self.layers = layers
 
-    # time_steps개의 데이터로 for_periods가 나온다고 학습 -> 후에는 이와 같은 방법으로 예측
-    time_steps, for_periods = 7, 1
-    # 학습 데이터와 테스트 데이터 분리
-    ts_train = (df[df['date'] < "2020-01-01"])['avg'].values
-    ts_test = (df[df['date'] >= "2020-01-01"])['avg'].values
-    ts_train_len = len(ts_train)
-    ts_test_len = len(ts_test)
+        self.lstm = torch.nn.LSTM(1, hidden_dim, num_layers=layers,
+                                  dropout=dropout,
+                                  batch_first=True)
+        self.fc = torch.nn.Linear(hidden_dim, output_dim, bias=True)
 
-    # 스텝별 학습 데이터 저장하기
-    X_train, y_train = [], []
-    for i in range(time_steps, ts_train_len):
-        X_train.append(ts_train[i - time_steps:i])
-        y_train.append(ts_train[i:i + for_periods])
-    X_train, y_train = np.array(X_train), np.array(y_train)
+    # 학습 초기화를 위한 함수
+    def reset_hidden_state(self):
+        self.hidden = (torch.zeros(self.layers, self.step, self.hidden_dim),
+                       torch.zeros(self.layers, self.step, self.hidden_dim))
 
-    # 학습 데이터를 3차원으로 변환
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    # 예측을 위한 함수
+    def forward(self, x):
+        x, _status = self.lstm(x)
+        x = self.fc(x[:, -1])
+        return x
 
-    # 스텝별 테스트 데이터 저장
-    X_test, y_test = [], []
-    for i in range(time_steps, ts_test_len):
-        X_test.append(ts_test[i - time_steps:i])
-        y_test.append(ts_test[i:i + for_periods])
-    X_test, y_test = np.array(X_test), np.array(y_test)
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
-    print("데이터 크기 확인")
-    print("train X Shape: ", X_train.shape)
-    print("train Y Shape: ", y_train.shape)
-    print("test X Shape: ", X_test.shape)
-    print("test Y Shape: ", y_test.shape)
+# 모델 학습하기
+def train_LSTM(model, train_df, num_epochs=None, verbose=1, patience=5):
+    criterion = torch.nn.MSELoss().to(device)
+    optimizer = torch.optim.Adam(model.parameters())
+    nb_epochs = num_epochs
 
-    # 실제 데이터 테이블 확인
-    # Convert the 3D shape of X_train to a data frame so we can see:
-    X_train_see = pd.DataFrame(np.reshape(X_train, (X_train.shape[0], X_train.shape[1])))
-    y_train_see = pd.DataFrame(y_train)
-    X_test_see = pd.DataFrame(np.reshape(X_test, (X_test.shape[0], X_test.shape[1])))
+    # epoch마다 loss 저장
+    train_hist = np.zeros(nb_epochs)
 
-    # 데이터를 Tensor로 변경
-    train_x_tensor = torch.FloatTensor(X_train).to(device)
-    train_y_tensor = torch.FloatTensor(y_train).to(device)
-    test_x_tensor = torch.FloatTensor(X_test).to(device)
-    test_y_tensor = torch.FloatTensor(y_test).to(device)
+    for epoch in range(nb_epochs):
+        avg_cost = 0
+        total_batch = len(train_df)
 
-    # Tensor 형태로 데이터셋 정의
-    dataset = TensorDataset(train_x_tensor, train_y_tensor)
-    dataloader = DataLoader(dataset,
-                            batch_size=128,
-                            shuffle=False)
+        for batch_idx, samples in enumerate(train_df):
+            x_train, y_train = samples
 
-    class LSTM(torch.nn.Module):
-        # 기본변수, layer를 초기화해주는 생성자
-        def __init__(self, input_dim, hidden_dim, seq_len, output_dim, layers):
-            super(LSTM, self).__init__()
-            self.hidden_dim = hidden_dim
-            self.seq_len = seq_len
-            self.output_dim = output_dim
-            self.layers = layers
-
-            self.lstm = torch.nn.LSTM(input_dim, hidden_dim, num_layers=layers,
-                                      dropout = 0.5,
-                                      batch_first=True)
-            self.fc = torch.nn.Linear(hidden_dim, output_dim, bias=True)
-
-        # 학습 초기화를 위한 함수
-        def reset_hidden_state(self):
-            self.hidden = (torch.zeros(self.layers, self.seq_len, self.hidden_dim),
-                           torch.zeros(self.layers, self.seq_len, self.hidden_dim))
-
-        # 예측을 위한 함수
-        def forward(self, x):
-            x, _status = self.lstm(x)
-            x = self.fc(x[:, -1])
-            return x
-
-    def train_model(model, train_df, num_epochs=None, verbose=10, patience=10):
-
-        criterion = torch.nn.MSELoss().to(device)
-        optimizer = torch.optim.Adam(model.parameters())
-        nb_epochs = num_epochs
-
-        # epoch마다 loss 저장
-        train_hist = np.zeros(nb_epochs)
-
-        for epoch in range(nb_epochs):
-            avg_cost = 0
-            total_batch = len(train_df)
-
-            for batch_idx, samples in enumerate(train_df):
-                x_train, y_train = samples
-
-                # seq별 hidden state reset
-                model.reset_hidden_state()
-
-                # H(x) 계산
-                outputs = model(x_train)
-
-                # cost 계산
-                loss = criterion(outputs, y_train)
-
-                # cost로 H(x) 개선
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-                avg_cost += loss / total_batch
-
-            train_hist[epoch] = avg_cost
-
-            if epoch % verbose == 0:
-                print('Epoch:', '%04d' % (epoch), 'train loss :', '{:.4f}'.format(avg_cost))
-
-            # patience번째 마다 early stopping 여부 확인
-            if (epoch % patience == 0) & (epoch != 0):
-
-                # loss가 커졌다면 early stop
-                if train_hist[epoch - patience] < train_hist[epoch]:
-                    print('\n Early Stopping')
-
-                    break
-
-        return model.eval(), train_hist
-
-    # 모델 학습
-    net = LSTM(1, 10, 7, 1, 1).to(device)
-    model, train_hist = train_model(net, dataloader, num_epochs=500, verbose=1, patience=5)
-
-    # 예측 테스트
-    with torch.no_grad():
-        pred = []
-        for pr in range(len(test_x_tensor)):
+            # seq별 hidden state reset
             model.reset_hidden_state()
 
-            predicted = model(torch.unsqueeze(test_x_tensor[pr], 0))
-            predicted = torch.flatten(predicted).item()
-            pred.append(predicted)
+            # H(x) 계산
+            outputs = model(x_train)
 
-    print('R2 SCORE : ', round(R2(test_y_tensor.cpu(), pred), 6))
-    print('RMSE SCORE : ', round(RMSE(test_y_tensor.cpu(), pred), 6))
-    print('MAPE SCORE : ', round(MAPE(test_y_tensor.cpu(), pred), 6))
+            # cost 계산
+            loss = criterion(outputs, y_train)
 
+            # cost로 H(x) 개선
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            avg_cost += loss / total_batch
+
+        train_hist[epoch] = avg_cost
+
+        if epoch % verbose == 0:
+            print('Epoch:', '%04d' % (epoch), 'train loss :', '{:.4f}'.format(avg_cost))
+
+        # patience번째 마다 early stopping 여부 확인
+        if (epoch % patience == 0) & (epoch != 0):
+
+            # loss가 커졌다면 early stop
+            if train_hist[epoch - patience] < train_hist[epoch]:
+                print('\n Early Stopping')
+
+                break
+
+    return model.eval(), train_hist
+
+
+# 스텝별 학습 데이터 저장하기
+def split_data(df, step, y_count):
+    x, y = [], []
+
+    for i in range(step, len(df)):
+        x.append(df[i - step:i])
+        y.append(df[i:i + y_count])
+
+    return np.reshape(np.array(x), (len(x), step, 1)), np.array(y)
+
+
+# LSTM 학습 자동화 코드
+def fit_LSTM():
+    save_df = pd.DataFrame(columns=["code", "class_num", "step", "batch_size", "hidden_dim",
+                                    "dropout", "layer", "r^2", "rmse", "mape"])
+    '''
+    step, y_count: step개의 데이터로 y_count개의 데이터를 학습
+    '''
+    option = {
+        "step": range(5, 11), "y_count": 1, "batch_size": [128, 256], "hidden_dim": range(5, 11),
+        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": dp.get_knps_name_EN(), "class_num": range(4),
+        "epoch": 500
+    }
+
+    for knps_name in option["knps_name"]:
+        for class_num in option["class_num"]:
+            for step in option["step"]:
+                for batch_size in option["batch_size"]:
+                    for hidden_dim in option["hidden_dim"]:
+                        for dropout in option["dropout"]:
+                            for layer in option["layer"]:
+                                df = dp.load_final_data(knps_name, class_num)
+
+                                # 학습 데이터(03-19)와 테스트 데이터(20-21) 분리
+                                df_train = (df[df['date'] < "2020-01-01"])['avg'].values
+                                df_test = (df[df['date'] >= "2020-01-01"])['avg'].values
+
+                                # 학습 데이터와 테스트 데이터 만들기
+                                train_x, train_y = split_data(df_train, option["step"], option["y_count"])
+                                test_x, test_y = split_data(df_test, option["step"], option["y_count"])
+
+                                print("데이터 크기 확인")
+                                print("train X Shape: ", train_x.shape)
+                                print("train Y Shape: ", train_y.shape)
+                                print("test X Shape: ", test_x.shape)
+                                print("test Y Shape: ", test_y.shape)
+
+                                # 실제 데이터 테이블 확인
+                                X_train_see = pd.DataFrame(np.reshape(train_x, (train_x.shape[0], train_x.shape[1])))
+                                y_train_see = pd.DataFrame(train_y)
+                                X_test_see = pd.DataFrame(np.reshape(test_x, (test_x.shape[0], test_x.shape[1])))
+
+                                # 데이터를 Tensor로 변경
+                                train_x_tensor = torch.FloatTensor(train_x).to(device)
+                                train_y_tensor = torch.FloatTensor(train_y).to(device)
+                                test_x_tensor = torch.FloatTensor(test_x).to(device)
+                                test_y_tensor = torch.FloatTensor(test_y).to(device)
+
+                                # Tensor 형태로 데이터셋 정의
+                                dataset = TensorDataset(train_x_tensor, train_y_tensor)
+                                dataloader = DataLoader(dataset,
+                                                        batch_size=batch_size,
+                                                        shuffle=False)
+
+                                # 모델 학습
+                                net = LSTM(hidden_dim, step, 1, 1, dropout).to(device)
+                                model, train_hist = train_LSTM(net, dataloader, num_epochs=option["epoch"])
+
+                                # 예측 테스트
+                                with torch.no_grad():
+                                    pred = []
+                                    for pr in range(len(test_x_tensor)):
+                                        model.reset_hidden_state()
+
+                                        predicted = model(torch.unsqueeze(test_x_tensor[pr], 0))
+                                        predicted = torch.flatten(predicted).item()
+                                        pred.append(predicted)
+
+                                r2 = round(R2(test_y_tensor.cpu(), pred), 6)
+                                rmse = round(RMSE(test_y_tensor.cpu(), pred), 6)
+                                mape = round(MAPE(test_y_tensor.cpu(), pred), 6)
+
+                                save_df.iloc[len(save_df)] = [knps_name, class_num, step, batch_size, hidden_dim,
+                                                              dropout, layer, r2, rmse, mape]
+
+    save_df.to_csv(f"{root}data{middle}lst_final.csv", index=False)
     # plt.figure(figsize=(8, 3))
     # plt.plot(np.arange(len(pred)), pred, color='red', label="pred")
     # plt.plot(np.arange(len(test_y_tensor)), test_y_tensor.cpu(), color='blue', label="true")
@@ -212,7 +213,7 @@ def fit_LSTM():
     # plt.legend()
     # plt.show()
 
-'''모델 검증하는 메소드'''
+
 # MSE
 def MSE(y, pred_y):
     return mean_squared_error(y, pred_y)
