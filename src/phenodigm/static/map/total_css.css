@@ -1,0 +1,347 @@
+
+
+    @font-face {
+    font-family: 'BMJUA';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+    }
+    a{
+    color:#ced1d9;
+    }
+
+    body {
+    font-family: 'BMJUA';
+    font-size: 30px;
+    color:#ced1d9
+    }
+
+
+    .parentLayer {
+    width: 1920px;
+    height: 1080px;
+    }
+
+    .leftLayer{
+    position: absolute;
+    width: 220px;
+    height: 1080px;
+    left: 0px;
+    top: 0px;
+
+    background-color:#262A33;
+    }
+
+    .map{
+    position: absolute;
+    left: 0%;
+    width: 1200px;
+    height: 1000px;
+    }
+
+
+
+
+    .home_area{
+    position: absolute;
+    width: 100%;
+    height:8%;
+    left: 0%;
+    top:37%;
+    }
+
+    .home_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .home_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .analysis_area{
+    position: absolute;
+    width: 100%;
+    height:8%;
+    left: 0%;
+    top:45%;
+    }
+
+    .analysis_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+
+    .analysis_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .predict_area{
+    position: absolute;
+    width: 100%;
+    height: 8%;
+    top:53%;
+    }
+
+    .predict_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .predict_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+    .phenocam_area{
+    position: absolute;
+    width: 100%;
+    height: 8%;
+    top:61%;
+    }
+
+    .phenocam_img{
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    }
+
+    .phenocam_btn{
+    position: absolute;
+    left: 60%;
+    top: 30%;
+    }
+
+
+    .ver{
+    position: absolute;
+    left:15%;
+    top:80%;
+    }
+
+    .middleLayer{
+    position: absolute;
+    width: 1700px;
+    height: 1080px;
+    left: 220px;
+    top: 0px;
+    background-color: #17191f;
+    }
+
+    .settingLayer{
+    position: absolute;
+    width: 1180px;
+    height: 530px;
+    left: 20px;
+    top: 535px;
+    background: #262A33;
+    border-radius: 26px;
+    }
+
+    .settingFile{
+    height:200px;
+    border-radius: 26px;
+    border-white;
+    }
+
+
+
+    .graphLayer{
+    position: absolute;
+    width: 1180px;
+    height: 495px;
+    left: 20px;
+    top: 20px;
+    background: #262A33;
+    border-radius: 26px;
+    }
+
+    #chart-1{
+    position: absolute;
+    top: 25px;
+    }
+
+    .DOYLayer{
+    position: absolute;
+    width: 450px;
+    height: 495px;
+    left: 1225px;
+    top: 20px;
+    background: #262A33;
+    border-radius: 26px;
+    }
+
+    .DOY_Title{
+    position: absolute;
+    left:150px;
+    top: 10px;
+    font-size: 50px;
+
+    }
+
+
+    .settingTitle{
+    position: absolute;
+    left:470px;
+    top: 2%;
+    font-size: 50px;
+    }
+
+    .mountainTitle {
+    position: absolute;
+    left: 150px;
+    top: 140px;
+    }
+
+    .mountainBar{
+    position: absolute;
+    width: 200px;
+    height: 40px;
+    left: 100px;
+    top: 180px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    border-radius: 26px;
+    color:white;
+    background-color:#262A33;
+    border-color:white;
+
+    }
+
+    .startTitle{
+    position: absolute;
+    left: 550px;
+    top:140px;
+    }
+
+    .start_year{
+    position: absolute;
+    width:150px;
+    height:40px;
+    left: 400px;
+    top:180px;
+    border-radius: 26px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    color:white;
+    background-color:#262A33;
+    border-color:white;
+    }
+
+    .endTitle{
+    position: absolute;
+    left: 565px;
+    top: 180px;
+    }
+
+    .end_year{
+    position: absolute;
+    width:150px;
+    height:40px;
+    left: 600px;
+    top: 180px;
+    border-radius: 26px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    color:white;
+    background-color:#262A33;
+    border-color:white;
+    }
+
+    .classTitle{
+    position: absolute;
+    left: 930px;
+    top:140px;
+    }
+
+    .class_num{
+    position: absolute;
+    left: 880px;
+    top: 180px;
+    width: 200px;
+    height: 40px;
+    border-radius: 26px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    color:white;
+    background-color:#262A33;
+    border-color:white;
+
+    }
+
+    .curve_fittingTitle{
+    position: absolute;
+    left: 115px;
+    top: 280px;
+
+    }
+
+    .curve_fit{
+    position: absolute;
+    left: 105px;
+    top: 320px;
+    width:200px;
+    height:40px;
+    border-radius: 26px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    color:white;
+    background-color:#262A33;
+    border-color:white;
+    }
+
+    .thresholdTitle{
+    position: absolute;
+    left: 530px;
+    top: 280px;
+    }
+
+    .threshold{
+    position: absolute;
+    left: 480px;
+    top: 320px;
+    width:200px;
+    height: 40px;
+    border-radius: 26px;
+    font-family: 'BMJUA';
+    font-size:20px;
+    color:white;
+    background-color:#262A33;
+    border-radius: 26px;
+    border-color:white;
+    }
+
+    .graphShape{
+    position: absolute;
+    left: 75%;
+    top: 50%;
+    width:130px;
+    height:87px;
+    border-radius: 26px;
+    border-color:white;
+
+    }
+
+    .submit_btn{
+    position: absolute;
+    width:300px;
+    height:100px;
+    left:435px;
+    top:75%;
+    background-color:#262A33;
+    border-radius: 26px;
+    border-color:white;
+    color:white;
+    font-family: 'BMJUA';
+    font-size:30px;
+    }

@@ -14,8 +14,7 @@ import pandas as pd
 
 
 # 전역변수
-root = "/Users/beom/Desktop/git/data/knps/dl_data/"
-
+root = "/Users/ho/Desktop/dl/"
 
 '''홈 페이지'''
 @xframe_options_exempt # iframe 허용하기 위한 태그
@@ -71,7 +70,15 @@ def analysis(request):
 
 '''예측 페이지'''
 def predict(request):
-    pass
+    property_list = ["mountain", "curve_fit", "start_year", "end_year", "class_num", "threshold"]
+
+    db = {}
+
+    if request.method == 'GET':
+        for key in property_list:
+            db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
+    print(request.GET)
+    return  render(request, 'map/predict.html', db)
 
 
 '''윤년 구하는 메소드'''
@@ -117,13 +124,14 @@ def get_chart(ori_db):
     timeSeries = TimeSeries(fusionTable) # 타임시리즈 만들기
 
     # 그래프 속성 설정하기
-    timeSeries.AddAttribute('chart', '{}')
     timeSeries.AddAttribute('caption', '{"text":"식생지수 분석"}')
+    timeSeries.AddAttribute('chart', '{"theme":"candy", "exportEnabled": "1"}')
     timeSeries.AddAttribute('subcaption', '{"text":"국립공원공단 레인저스"}')
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
+
     # 그래프 그리기
-    fcChart = FusionCharts("timeseries", "ex1", 700, 450, "chart-1", "json", timeSeries)
+    fcChart = FusionCharts("timeseries", "ex1", 1180, 450, "chart-1", "json", timeSeries)
 
     # 그래프 정보 넘기기
     return  fcChart.render()
@@ -136,14 +144,19 @@ def get_multi_plot(ori_db):
     # 그래프 속성 및 데이터를 저장하는 변수
     db = {
         "chart": { # 그래프 속성
+            "exportEnabled": "1",
+            "bgColor": "#262A33",
+            "bgAlpha": "100",
+            "showBorder": "0",
             "showvalues": "0",
             "numvisibleplot": "12",
             "caption": "식생지수 분석",
             "subcaption": "국립공원공단 레인저스",
             "yaxisname": "EVI",
-            "theme": "fusion",
+            "theme": "candy",
             "drawAnchors": "0",
             "plottooltext": "<b>$dataValue</b> EVI of $label",
+
         },
         "categories": [{ # X축
             "category": [{"label": str(i)} for i in range(1, 365, 8)]
@@ -160,6 +173,7 @@ def get_multi_plot(ori_db):
         })
 
     # 그래프 그리기
-    chartObj = FusionCharts('scrollline2d', 'ex1', 700, 450, 'chart-1', 'json', json.dumps(db))
+    chartObj = FusionCharts('scrollline2d', 'ex1', 1180, 450, 'chart-1', 'json', json.dumps(db))
 
     return chartObj.render() # 그래프 정보 넘기기
+
