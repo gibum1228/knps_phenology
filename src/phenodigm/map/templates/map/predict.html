@@ -11,33 +11,29 @@
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:35px; width:250px">
             <div class="home_area">
-                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                 <a class="home_btn" href="/">홈</a>
             </div>
 
             <div class="analysis_area">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
                 <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
             </div>
 
-            <div class="predict_area" style="background-color:#f2f2eb; border-radius: 26px;">
-                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
+            <div class="predict_area" style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
                 <a class="predict_btn" href="/predict/" style="color:black">예측</a>
             </div>
 
             <div class="phenocam_area">
-                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam">카메라</a>
             </div>
-            <p class="ver">
-                Phenodigm<br>
-                ver 1.0.0
-            </p>
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="150">
         </div>
         <div class="middleLayer">
-            <img class="love_img" src="{%static 'map/icon/기웃반달.png'%}" alt="My Image" style="position:absolute; left:1190px; top:550px; width:500px">
             <div class="graphLayer">
                 <div id="chart-1">
                     {{ graph | safe }}
@@ -46,7 +42,11 @@
 
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
+                <textarea readonly class="DOY_table">
+                </textarea>
             </div>
+
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
 
             <div class="settingLayer">
                 <div class="settingTitle">
