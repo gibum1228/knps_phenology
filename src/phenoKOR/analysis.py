@@ -1,4 +1,5 @@
 import os
+import platform
 import phenoKOR as pk
 import numpy as np
 import pandas as pd
@@ -6,12 +7,15 @@ import seaborn as sns
 import math
 import matplotlib.pyplot as plt
 from datetime import datetime
-import numpy as np
 from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
-import os
 import warnings
 warnings.filterwarnings('ignore')
+
+
+# 전역변수
+middle = "/" if platform.system() == "Darwin" else "\\" # 운영체제에 따라 슬래쉬 설정
+root = os.getcwd() + middle
 
 
 def check_stationarity(path):
@@ -286,9 +290,3 @@ def DL():
             else:
                 sos_all[i].to_csv(f'C:/Users/cdbre/Desktop/Project/data/pred/sos/{park}_sos_mixed.csv')
                 mixed.to_csv(f'C:/Users/cdbre/Desktop/Project/data/pred/{park}/{park}_DL_mixed_datetime.csv')
-
-
-if __name__ == "__main__":
-    root = "/Users/beom/Desktop/git/data/knps/"
-
-    check_stationarity(root + "day_8_data/2021_jiri_final.csv")
