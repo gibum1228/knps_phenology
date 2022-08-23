@@ -28,33 +28,30 @@ def C_Phenophase(path, park, class_input, year, how):
     :return: Phenophase which and when you are interested in
     '''
 
-    park_type = ['bukhan', 'byeonsan', 'chiak', 'dadohae', 'deogyu', 'gaya', 'gyeongju', 'gyeryong', 'halla', 'hallyeo', 'jiri', 'juwang', 'mudeung', 'naejang', 'odae', 'seorak', 'sobaek', 'songni', 'taean', 'taebaek', 'wolchul', 'worak']
+    park_type = ['bukhan', 'byeonsan', 'chiak', 'dadohae', 'deogyu', 'gaya', 'gyeongju', 'gyeryong', 'halla',
+                 'hallyeo', 'jiri', 'juwang', 'mudeung', 'naejang', 'odae', 'seorak', 'sobaek', 'songni',
+                 'taean', 'taebaek', 'wolchul', 'worak']
     class_type = ['grassland', 'coniferous', 'broadleaved', 'mixed']
     years = list(range(2003, 2022))
 
     if park in park_type:
         if class_input in class_type:
             if year in years:
-                data = pd.read_csv(f'C:/Users/cdbre/Desktop/Project/data/pred/{park}/{park}_DL_{class_input}_datetime.csv')
-                sos_df = pd.read_csv(f'C:/Users/cdbre/Desktop/Project/data/pred/sos/{park}_sos_{class_input}.csv')
+                data = pd.read_csv(path + f'{park}/{park}_DL_{class_input}_datetime.csv')
+                sos_df = pd.read_csv(path + f'sos/{park}_sos_{class_input}_last.csv')
             else:
-                print(f'{year} is unavailable')
+                print(f'{year} is unavailable')  # 해당 연도 판별
         else:
-            print(f'{class_input} is not correct')
+            print(f'{class_input} is not correct')  # 해당 산림 있는지 판별
     else:
-        print(f'{park} is not correct')
+        print(f'{park} is not correct')  # 해당 국립공원 판별
 
     if how == 'sos':
         sos_df.columns = ['year', 'sos']
 
-        idx = years.index(year)
-        for i, value in enumerate(sos_df['sos']):
-            sos_df.iloc[i, 1] = value - 365 * i
-            if i == idx:
-                phenophase = sos_df.iloc[i, 1]
-
+        phenophase = sos_df[sos_df['year'] == year].iloc[0,1]  # sos 스칼라 값
         phenophase = format(datetime.datetime.strptime(str(year)+str(phenophase), '%Y%j'), '%Y-%m-%d')
-        phenophase_bw = ''
+        phenophase_betw = ""  # 다른 조건들은 사이값 추출하니까 이 경우 빈칸으로 설정
 
     if how == 'diff40%':
         data = data[data['Datetime'].str[:4] == str(year)]
@@ -83,8 +80,8 @@ def C_Phenophase(path, park, class_input, year, how):
         thresh = np.min(data['avg']) + (np.max(data['avg']) - np.min(data['avg'])) * 0.5 ## 개엽일 EVI 값
 
         ## 개엽일 사이값 찾기
-        high = bh_bl2003[bh_bl2003['avg'] >= thresh]['Datetime'].iloc[0]
-        low = bh_bl2003.Datetime[[bh_bl2003[bh_bl2003['avg'] >= thresh]['Datetime'].index[0] - 1]].iloc[0]
+        high = data[data['avg'] >= thresh]['Datetime'].iloc[0]
+        low = data.Datetime[[data[data['avg'] >= thresh]['Datetime'].index[0] - 1]].iloc[0]
         high_value = data[data['Datetime'] == high].iloc[0, 2]  ## high avg 값만 추출
         low_value = data[data['Datetime'] == low].iloc[0, 2]  ## low avg 값만 추출
         div_add = (high_value - low_value) / 8
