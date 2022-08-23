@@ -21,10 +21,10 @@
         });
     </script>
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
-    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
-    <div class="parentLayer">
+    <div class="container">
         <div class="leftLayer">
             <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:35px; width:250px">
             <div class="home_area">
@@ -49,6 +49,7 @@
             <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="150">
         </div>
         <div class="middleLayer">
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
             <div class="graphLayer">
                 <div id="chart-1">
                     {{ graph | safe }}
@@ -56,11 +57,10 @@
             </div>
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
-                <textarea readonly class="DOY_table">
-                </textarea>
-            </div>
-            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
+                <table class="DOY_table">
+                </table>
 
+            </div>
             <div class="settingLayer">
                 <div class="settingTitle">
                     <b>그래프 설정</b>

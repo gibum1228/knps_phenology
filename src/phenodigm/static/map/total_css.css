@@ -16,20 +16,30 @@
     body {
         font-family: 'Source Sans Pro';
         font-size: 25px;
-        color:#ced1d9
+        color:#ced1d9;
+
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #17191f;
+
     }
 
+    .container {
+        width:1920px;
+        height:1080px;
+        left:0px;
+        top:0px;
 
-
-    .parentLayer {
-        width: 1440px;
-        height: 1080px;
     }
+
 
     .page_title{
         position: absolute;
         font-size:60px;
         left: 20px;
+        top: 60px;
+
     }
 
     .leftLayer{
@@ -45,7 +55,7 @@
     .map{
         position: absolute;
         left:20px;
-        top: 180px;
+        top: 250px;
         width: 1200px;
 
     }

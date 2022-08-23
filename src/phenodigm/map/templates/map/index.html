@@ -5,13 +5,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
     <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
     <title>국립공원공단 페노다임</title>
 </head>
 <body>
-    <div class="parentLayer">
+    <div class="container">
          <div class="leftLayer">
                 <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:35px; width:250px">
 
@@ -37,6 +37,7 @@
                 <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="150">
         </div>
         <div class="middleLayer">
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
             <h1 class="page_title">빅리더 7시 국립공원공단 레인저스 - 페노다임</h1>
             <div class="map">
                 {{map | safe}}
