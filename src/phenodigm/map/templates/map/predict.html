@@ -8,6 +8,19 @@
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
     <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
     <title>국립공원공단 레인저스</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $( "select[name=knps]" ).val( "{{ knps }}" );
+            $( "select[name=class_num]" ).val( "{{ class_num }}" );
+            $( "select[name=start_year]" ).val( "{{ start_year }}" );
+            $( "select[name=end_year]" ).val( "{{ end_year }}" );
+            $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
+            $( "input[name=threshold]" ).val( "{{ threshold }}" );
+        });
+    </script>
+    <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
@@ -18,14 +31,14 @@
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1';" >
+            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" >
                 <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
-                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
+                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1">분석</a>
             </div>
 
-            <div class="predict_area" onclick="location.href='/predict/';" style="background-color:#f2f2eb; border-radius: 15px;">
+            <div class="predict_area" onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5';" style="background-color:#f2f2eb; border-radius: 15px;">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn" href="/predict/" style="color:black">예측</a>
+                <a class="predict_btn" href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&" style="color:black">예측</a>
             </div>
 
             <div class="phenocam_area" onclick="location.href='/phenocam/';">
@@ -55,7 +68,7 @@
                     <div>
                         <b class="mountainTitle">국립공원</b>
                     </div>
-                    <select class="mountainBar" name="mountain">
+                    <select class="mountainBar" name="knps">
                         <option value="" selected></option>
                         <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
                         <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
@@ -97,8 +110,7 @@
                     <input class="threshold" type="number" name="threshold">
                 </form>
                 <button class="submit_btn" type="submit" form="optionForm">예측</button>
-                </div>
-
+            </div>
         </div>
     </div>
 </body>

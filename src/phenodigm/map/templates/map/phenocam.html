@@ -32,14 +32,14 @@
                     <a class="home_btn" href="/">홈</a>
                 </div>
 
-                <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1';" >
+                <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" >
                     <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
-                    <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" >분석</a>
+                    <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1" >분석</a>
                 </div>
 
-                <div class="predict_area" onclick="location.href='/predict/';">
+                <div class="predict_area" onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&';">
                     <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                    <a class="predict_btn" href="/predict/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">예측</a>
+                    <a class="predict_btn" href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&">예측</a>
                 </div>
 
                 <div class="phenocam_area" onclick="location.href='/phenocam/';" style="background-color:#f2f2eb; border-radius: 15px;">
@@ -111,7 +111,5 @@
                     <button class="submit_btn" type="submit" form="optionForm">분석</button>
                 </div>
         </div>
-
-
 </body>
 </html>

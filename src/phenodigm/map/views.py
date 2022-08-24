@@ -11,6 +11,8 @@ from .fusioncharts import FusionTable
 from .fusioncharts import TimeSeries
 import json
 import pandas as pd
+import numpy as np
+import datetime
 
 
 # 전역변수
@@ -64,21 +66,25 @@ def analysis(request):
 
     db['graph'] = get_chart(db) if db['shape'] == "1" else get_multi_plot(db) # shape 값(연속, 연도)에 따라 그래프를 그려줌
     # *shape는 default: 1임
+    db['dataframe'] = export_doy(db)
+
+    # *threshold는 default : 50
 
     return render(request, 'map/analysis.html', db) # 웹 페이지에 값들 뿌려주기
 
 
 '''예측 페이지'''
 def predict(request):
-    property_list = ["mountain", "curve_fit", "start_year", "end_year", "class_num", "threshold"]
-
+    property_list = ["knps", "curve_fit", "start_year", "end_year", "class_num", "threshold"]
     db = {}
 
     if request.method == 'GET':
         for key in property_list:
             db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
-    print(request.GET)
-    return  render(request, 'map/predict.html', db)
+
+    db['graph'] = get_chart(db) #예측은 연속 그래프 고정
+
+    return render(request, 'map/predict.html', db)
 
 def phenocam(request):
 
@@ -99,14 +105,14 @@ def get_Feb_day(year):
 
 '''연속된 그래프를 그려주는 메소드'''
 def get_chart(ori_db):
-    df = pd.read_csv(root + "bukhan/bukhan_2.csv") # curve fitting된 데이터 가져오기
+    df = pd.read_csv(root + "bukhan/bukhan_DL_broadleaved_NM.csv") # curve fitting된 데이터 가져오기
     data = [] # 그래프를 그리기 위한 데이터
     schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}] # 하나의 data 구조
     info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] # 월별 일 수 정보
     year, month, day = 2003, 1, 1 # 년월일을 알기 위한 변수
 
     for _ in range(len(df)): # data에 값 채우기
-        data.append([f"{year}-{month}-{day}", df.iloc[len(data), 1]]) # schema 형태에 맞게 데이터 추가
+        data.append([f"{year}-{month}-{day}", df.iloc[len(data), 2]]) # schema 형태에 맞게 데이터 추가
 
         day += 8 # 8일 간격씩 데이터 추가
         if month == 2: # 2월은 윤년 여부 판단하기
@@ -144,7 +150,7 @@ def get_chart(ori_db):
 
 '''연도별 그래프를 그려주는 메소드'''
 def get_multi_plot(ori_db):
-    df = pd.read_csv(root + "bukhan/bukhan_2.csv")  # curve fitting된 데이터 가져오기
+    df = pd.read_csv(root + "bukhan/bukhan_DL_broadleaved_NM.csv")  # curve fitting된 데이터 가져오기
 
     # 그래프 속성 및 데이터를 저장하는 변수
     db = {
@@ -174,12 +180,72 @@ def get_multi_plot(ori_db):
         db["dataset"].append({
             "seriesname": str(now), # 레이블 이름
             # 해당 연도에 시작 (1월 1일)부터 (12월 31)일까지의 EVI 값을 넣기
-            "data": [{ "value": i } for i in df[(df[df.columns[0]] >= 365 * (now - 2003)) & (df[df.columns[0]] <= 365 * (now - 2002))][df.columns[1]]]
+            "data": [{ "value": i } for i in df[(df[df.columns[0]] >= 365 * (now - 2003)) & (df[df.columns[0]] <= 365 * (now - 2002))][df.columns[2]]]
         })
 
     # 그래프 그리기
     chartObj = FusionCharts('scrollline2d', 'ex1', 1000, 400, 'chart-1', 'json', json.dumps(db))
 
     return chartObj.render() # 그래프 정보 넘기기
+
+
+def export_doy(ori_db):
+    df = pd.read_csv(root + "bukhan/bukhan_DL_broadleaved_NM.csv")
+    df_sos = pd.read_csv(root + "bukhan/bukhan_broadleaved_NM.csv")
+    df_sos.columns = ['year', 'sos']
+
+    phenophase_date = ''
+    phenophase_betw = ''
+
+    sos = []
+    doy = []
+    betwn = []
+
+    #sos 기준으로 개엽일 추출
+    for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
+        phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+        phenophase_date = (f'{year}년도 개엽일 : {phenophase_doy}일')
+        sos.append(phenophase_date)
+
+        data = df[df['Datetime'].str[:4] == str(year)]
+        thresh = np.min(data['avg']) + (np.max(data['avg']) - np.min(data['avg'])) * (float(ori_db["threshold"]))##개엽일의 EVI 값
+
+
+        ## 개엽일 사이값 찾기
+        high = data[data['avg'] >= thresh]['Datetime'].iloc[0]
+        low = data.Datetime[[data[data['avg'] >= thresh].index[0]-1]].to_list()[0]
+        high_value = data.avg[data['Datetime'] == high].to_list()[0]  ## high avg 값만 추출
+        low_value = data.avg[data['Datetime'] == low].to_list()[0]  ## low avg 값만 추출
+        div_add = (high_value - low_value) / 8
+
+        for a in range(8):
+            if low_value > thresh:
+                break
+            else:
+                low_value += div_add
+
+        phenophase_doy = format(pd.to_datetime(low) + datetime.timedelta(days=a - 1), '%Y-%m-%d')
+        phenophase_date= format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j')+'일'
+        phenophase_betw= (f'{low} 와 {high} 사이')
+
+        doy.append(phenophase_date)
+        betwn.append(phenophase_betw)
+
+
+    total_DataFrame  = pd.DataFrame(columns=['SOS 개엽일', '임계치 개엽일', '임계치 오차범위'])
+
+    for i in range(len(doy)):
+        total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
+
+
+
+    html_DataFrame = total_DataFrame.to_html(justify='left')
+
+
+    return  html_DataFrame
+
+
+
+
 
 
