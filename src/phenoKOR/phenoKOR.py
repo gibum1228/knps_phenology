@@ -7,18 +7,17 @@ import pandas as pd
 import numpy as np
 import scipy.io as io
 import matplotlib.pyplot as plt
+import model
 
-'''
-불러오는 메소드 모음
-'''
-# 관심영역 정보가 담긴 파일 가져오기
+
+'''마스크 정보가 담긴 파일 가져오기'''
 def load_mask(path, filename):
     mask = io.loadmat(path + filename) # scipy.io
 
     return mask['roiimg'] # mat 파일을 호출하면 dict type인데 마스크 정보를 담고 있는 'roiimg'를 return
 
 
-# 이미지 데이터 가져오기
+'''이미지 데이터 가져오기'''
 def load_image(path):
     info = {} # 정보가 담긴 딕셔너리
     ori_df = pd.DataFrame() # 정보를 담을 데이터프레임
@@ -40,7 +39,7 @@ def load_image(path):
     return ori_df, np.array(info["imgs"])
 
 
-# 이미지 데이터에서 관심영역 추출하기
+'''이미지 데이터에서 관심영역 추출하기'''
 def load_roi(imgs, mask):
     new_imgs = np.zeros_like(imgs) # 검은 배경만 가지는 이미지 데이터 생성
 
@@ -53,7 +52,7 @@ def load_roi(imgs, mask):
 def load_csv(path):
     df = pd.read_csv(path)
 
-    x = [i for i in range(9, 365, 16)] # 아쿠아는 9일부터 16일씩
+    x = [i for i in range(1, 365, 8)] # 아쿠아는 9일부터 16일씩
     # 클래스별 일일 평균값 불러오기
     y0 = df[df["class"] == 0]["avg"].to_list()
     y1 = df[df["class"] == 1]["avg"].to_list()
@@ -63,10 +62,11 @@ def load_csv(path):
     return x, y0, y1, y2, y3
 
 
-# csv 파일에서 이미지 가져오기
-def load_image_for_csv():
-    pass
+def get_knps_name():
+    name = ["gaya", "gyeongju", "gyeryong", "naejang", "dadohae", "deogyu", "mudeung", "byeonsan", "bukhan", "seorak",
+            "sobaek", "songni", "odae", "worak", "wolchul", "juwang", "jiri", "chiak", "taebaek", "taean", "halla", "hallyeo"]
 
+    return name
 
 '''
 저장 메소드 모음
