@@ -61,18 +61,43 @@ def fit_arima():
 
 
 def fit_prophet():
-    df = load_data()
+    root = '/Users/shjoo/knps_final.csv'
+    data = pd.read_csv(root)
+
+    # 북한산의 활엽수를 기준으로 모델링 하겠음.
+    # 이후에는 사용자 입력받아서 하는걸로.
+
+    # 데이터 한정짓기
+
+    df = data[(data['code'] == 'bukhan') & (data['class'] == 2)]
+    df = df[['date', 'avg']]
+    df.columns = ['ds', 'y']
+    # 데이터 나누기
+    df_train = df[df['ds'] <= '2021-01-01']
+    df_test = df[df['ds'] >= '2021-01-01']
+    print(df_train)
+    print(df_test)
 
     model = Prophet()
+    # model.add_seasonality(period=365,fourier_order=10,mode='additive')
+    # model.add_regressor('regressor',mode='additive')
     # model.stan_backend.set_options(newton_fallback=False)
-    model.fit(df, algorithm='Newton')
+    model.fit(df_train, algorithm='Newton')
 
-    df_forecast = model.make_future_dataframe(periods=365)
-    print(df_forecast.tail())
+    forecast = 365  # forecast만큼 이후를 예측
+    df_forecast = model.make_future_dataframe(periods=forecast)  # 예측할 ds 만들기
+    df_forecast = model.predict(df_forecast)  # 비어진 ds만큼 예측
 
-    # df_forecast = model.predict(df_forecast)
+    model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(30, 10))
+    model.plot_components(df_forecast)  # 명확한 추세를 발견하였음.
+    plt.plot(df_train['y'])
+    plt.show()
 
-    # df_prophet.plot(df_forecast, xlabel="date", ylabel="evi")
+    forecast_only = df_forecast[df_forecast['ds'] >= '2021-01-01']
+
+    forecast_only_8 = forecast_only[0::8]['yhat']
+    print(forecast_only_8)
+    print(df_test)
 
 
 def fit_random_forest():
