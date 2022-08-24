@@ -80,6 +80,11 @@ def predict(request):
     print(request.GET)
     return  render(request, 'map/predict.html', db)
 
+def phenocam(request):
+
+    return render(request, 'map/phenocam.html')
+
+
 
 '''윤년 구하는 메소드'''
 def get_Feb_day(year):
@@ -131,7 +136,7 @@ def get_chart(ori_db):
 
 
     # 그래프 그리기
-    fcChart = FusionCharts("timeseries", "ex1", 1180, 450, "chart-1", "json", timeSeries)
+    fcChart = FusionCharts("timeseries", "ex1", 1000, 400, "chart-1", "json", timeSeries)
 
     # 그래프 정보 넘기기
     return  fcChart.render()
@@ -173,7 +178,8 @@ def get_multi_plot(ori_db):
         })
 
     # 그래프 그리기
-    chartObj = FusionCharts('scrollline2d', 'ex1', 1180, 450, 'chart-1', 'json', json.dumps(db))
+    chartObj = FusionCharts('scrollline2d', 'ex1', 1000, 400, 'chart-1', 'json', json.dumps(db))
 
     return chartObj.render() # 그래프 정보 넘기기
+
 
