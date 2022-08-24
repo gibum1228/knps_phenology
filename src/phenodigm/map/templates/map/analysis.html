@@ -26,27 +26,27 @@
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:35px; width:250px">
-            <div class="home_area">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute;  top:35px; width:120px">
+            <div class="home_area" onclick="location.href='/';">
                 <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" style="background-color:#f2f2eb; border-radius: 15px;">
+            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1';" style="background-color:#f2f2eb; border-radius: 15px;">
                 <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
                 <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" style="color:black">분석</a>
             </div>
 
-            <div class="predict_area">
+            <div class="predict_area" onclick="location.href='/predict/';">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn" href="/predict/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">예측</a>
+                <a class="predict_btn" href="/predict/">예측</a>
             </div>
 
-            <div class="phenocam_area">
+            <div class="phenocam_area" onclick="location.href='/phenocam/';">
                 <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam/">카메라</a>
             </div>
-            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="150">
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
         </div>
         <div class="middleLayer">
             <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
