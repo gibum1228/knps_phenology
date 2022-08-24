@@ -247,6 +247,9 @@
         top: 0px;
         background: #262A33;
         border-radius: 26px;
+        font-family: 'Source Sans Pro';
+        font-size: 5px;
+        color:white
     }
 
     .DOY_Title{
@@ -257,28 +260,25 @@
 
 
     }
-
-    .DOY_table{
+    .DOYArea{
         position: absolute;
-        width: 300px;
-        height: 460px;
-        left:40px;
-        top: 50px;
+        width: 340px;
+        height: 400px;
+        left:10px;
+        top: 100px;
         padding:5px;
-
-        box-sizing: border-box;
-        background:#17191f;
-        border: solid 2px white;
-        border-radius: 20px;
-        resize: none;
-        overflow:   auto;
-
-
         font-family: 'Source Sans Pro';
-        font-size: 20px;
-        color:white
+        font-size: 5px;
+        color:white;
+        overflow:scroll;
 
     }
+
+    table {
+    font-size: 9pt;
+    }
+
+
 
     .data_img{
         position: absolute;
