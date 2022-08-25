@@ -274,8 +274,19 @@
 
     }
 
+    #csvDownloadButton{
+        position: absolute;
+        top: 70px;
+        left: 250px;
+        font-family:'Source Sans Pro';
+        font-size: 12px;
+        color:white;
+        background:#262A33;
+        border-color:white;
+    }
+
     table {
-    font-size: 9pt;
+    font-size: 9.5pt;
     }
 
 
