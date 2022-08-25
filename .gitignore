@@ -14,6 +14,7 @@
 .idea/
 .DS_Store
 **/.DS_Store
+src/phenoKOR/test.py
 # AWS User-specific
 .idea/**/aws.xml
 

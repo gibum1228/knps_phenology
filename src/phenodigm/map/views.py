@@ -93,10 +93,6 @@ def predict(request):
     return render(request, 'map/predict.html', db)
 
 
-def phenocam(request):
-    return render(request, 'map/phenocam.html')
-
-
 # 페노캠 이미지 분석하는 페이지
 def phenocam(request):
     db = {}
