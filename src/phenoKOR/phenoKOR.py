@@ -34,92 +34,73 @@ def show_plot(y, x = []):
     plt.show()
 
 
+# ROI 마스크 PNG 파일 추출
+def draw_mask():
+    pts = []  # 마우스로 클릭한 포인트 저장
+    mask_list = []  # 마스크 리스트 저장
 
+    # 마스크 추출을 위한 마우스 클릭 이벤트 리스너
+    def draw_mask_eventListener(event, x, y, flags, param):
+        global pts
+        img2 = img.copy()
 
+        if event == cv.EVENT_LBUTTONDOWN:  # 마우스 왼쪽 버튼 클릭 시 pts에 (x,y)좌표를 추가
+            pts.append((x, y))
 
-### ROI 영역 지정
-pts = []  # 마우스로 클릭한 포인트를 저장
-resultforJSON = []  # pts에 저장된 포인트를 json형태로 저장
-file_path = './ROI.json'  # json으로 저장하기 위한 파일경로
-mask_list = []
+        if event == cv.EVENT_RBUTTONDOWN:  # 마우스 오른쪽 버튼 클릭 시 클릭 했던 포인트를 삭제
+            pts.pop()
 
+        if event == cv.EVENT_LBUTTONDBLCLK:  # 마우스 왼쪽 버튼 더블 클릭 시 좌표들을 리스트에 추가
+            # 초기화
+            mask_list.append(pts)
+            pts = []
 
-def draw_roi(event, x, y, flags, param):  # roi검출을 위한 함수 정의
-    global pts
-    img2 = img.copy()
+        if event == cv.EVENT_MBUTTONDOWN:  # 마우스 중앙(휠)버튼 클릭 시 ROI 선택 종료
+            result_roi = np.zeros(img.shape, np.uint8)  # 최종 마스크 이미지
 
-    if event == cv.EVENT_LBUTTONDOWN:  # 마우스 왼쪽버튼을 클릭하면
-        pts.append((x, y))  # pts에 (x,y)좌표를 추가한다
-        print('포인트 #%d 좌표값(%d,%d)' % (len(pts), x, y))  # 정상적으로 추가되는지 출력으로 확인
+            for point in mask_list:
+                if not point: continue
+                mask = np.zeros(img.shape, np.uint8)
+                points = np.array(point, np.int32)
+                points = points.reshape((-1, 1, 2))  # pts 2차원을 이미지와 동일하게 3차원으로 재배열
+                mask = cv.polylines(mask, [points], True, (255, 255, 255), 2)  # 포인트를 연결하는 라인을 설정 후 마스크 생성
+                mask2 = cv.fillPoly(mask.copy(), [points], (255, 255, 255))  # 채워진 다각형 마스크 생성
 
-    #         resultforJSON.append({'point':[len(pts)],
-    #                               'coordinate':[[int(x),int(y)]]})
-    #                               # 포인트 순서와 좌표값을 딕셔너리 형태로 추가해준다
+                ROI = cv.bitwise_and(mask2, img)  # img와 mask2에 중첩된 부분을 추출
 
-    if event == cv.EVENT_RBUTTONDOWN:  # 마우스 오른쪽버튼을 클릭하면
-        pts.pop()  # 클릭했던 포인트를 삭제한다
+                result_roi = cv.add(result_roi, ROI)  # 마스크 이미지끼리 더하기
 
-    if event == cv.EVENT_LBUTTONDBLCLK:
-        print("in db")
-        pts.pop()
-        mask_list.append(pts)
-        pts = []
+            result_roi = np.where(result_roi == 0, result_roi, 255)  # 첫번째 매개변수 조건에 따라 참이면 유지, 거짓이면 255으로 변경
+            cv.imwrite('result_roi.png', result_roi) # 저장
+            cv.destroyAllWindows()  # 열린 창 닫기
+            cv.waitKey(0)
 
-    if event == cv.EVENT_MBUTTONDOWN:  # 마우스 중앙(휠)버튼을 클릭하면
-        #         print('총 %d개의 포인트 설정' % len(pts))
-        #         mask = np.zeros(img.shape, np.uint8) #컬러를 다루기 때문에 np로 형변환
-        #         points = np.array(pts, np.int32)
-        #         points = points.reshape((-1,1,2)) #pts 2차원을 이미지와 동일하게 3차원으로 재배열
-        #         mask = cv.polylines(mask, [points], True, (255,255,255), 2) #포인트와 포인트를 연결하는 라인을 설정
-        #         mask2 = cv.fillPoly(mask.copy(), [points], (255,255,255)) #폴리곤 내부 색상 설정
+        try:
+            if len(pts) > 0:  # 마우스 포인트 원으로 지정
+                cv.circle(img2, pts[-1], 3, (0, 0, 255), -1)
+        except:
+            pts = []
 
-        #         ROI = cv.bitwise_and(mask2,img) # mask와 mask2에 중첩된 부분을 추출
-        print("in middle")
-        result_roi = np.zeros(img.shape, np.uint8)
+        if len(pts) > 1:  # 마우스 포인트 연결 라인 생성
+            for i in range(len(pts) - 1):
+                cv.circle(img2, pts[i], 5, (0, 0, 255), -1)
+                cv.line(img=img2, pt1=pts[i], pt2=pts[i + 1], color=(255, 0, 0), thickness=2)
 
-        for point in mask_list:
-            print("for.....")
-            mask = np.zeros(img.shape, np.uint8)  # 컬러를 다루기 때문에 np로 형변환
-            points = np.array(point, np.int32)
-            points = points.reshape((-1, 1, 2))  # pts 2차원을 이미지와 동일하게 3차원으로 재배열
-            mask = cv.polylines(mask, [points], True, (255, 255, 255), 2)  # 포인트와 포인트를 연결하는 라인을 설정
-            mask2 = cv.fillPoly(mask.copy(), [points], (255, 255, 255))  # 폴리곤 내부 색상 설정
+        if len(mask_list) > 0:  # 마스크 여러 개일때 포인트 연결 라인 생성
+            for m in mask_list:
+                for i in range(len(m) - 1):
+                    cv.circle(img2, m[i], 5, (0, 0, 255), -1)
+                    cv.line(img=img2, pt1=m[i], pt2=m[i + 1], color=(255, 0, 0), thickness=2)
 
-            ROI = cv.bitwise_and(mask2, img)  # mask와 mask2에 중첩된 부분을 추출
+        cv.imshow('image', img2)  # 이미지 화면 출력
 
-            result_roi = cv.add(result_roi, ROI)
+    img = cv.imread("C:/Users/kub84/Desktop/jir031_2021_06_01_132807.JPG")  # 저장된 이미지 읽어 오기
+    img = cv.resize(img, (600, 400))
+    cv.namedWindow('image')  # 새로운 윈도우 창 이름 설정
+    cv.setMouseCallback('image', draw_mask_eventListener)  # 마우스 이벤트가 발생했을 때 전달할 함수
 
-        #         with open(file_path,'w') as outfile: #resultforJSON에 저장된 내용을 json파일로 추출
-        #             json.dump(resultforJSON,outfile,indent=4)
-
-        result_roi = np.where(result_roi == 0, result_roi, 255)
-        print("save")
-        cv.imwrite('result_roi.png', result_roi)
-        cv.imshow('ROI', result_roi)
-        #         cv.waitKey(0)
-        exit()
-
-    if len(pts) > 0:  # 포인트를 '원'으로 표시
-        cv.circle(img2, pts[-1], 3, (0, 0, 255), -1)
-
-    if len(pts) > 1:
-        for i in range(len(pts) - 1):
-            cv.circle(img2, pts[i], 5, (0, 0, 255), -1)
-            cv.line(img=img2, pt1=pts[i], pt2=pts[i + 1], color=(255, 0, 0), thickness=2)
-
-    cv.imshow('image', img2)
-
-
-img = cv.imread("C:/Users/kub84/Desktop/jir031_2021_06_01_132807.JPG")
-img = cv.resize(img, (600, 400))
-cv.namedWindow('image')
-cv.setMouseCallback('image', draw_roi)
-
-while True:
-    key = cv.waitKey(1) & 0xFF
-    if key == 27:
-        break
-    if key == ord('s'):
-        saved_data = {'ROI': pts}
-        break
-cv.destroyAllWindows()
+    while True:
+        key = cv.waitKey(1) & 0xFF  # SOH
+        if key == 27:  # ESC
+            break
+    cv.destroyAllWindows()  # 열린 창 닫기
