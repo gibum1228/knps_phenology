@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+<<<<<<< HEAD
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -71,7 +72,12 @@
                     <div class="img_list">
                         불러온 이미지 목록 영역
                     </div>
-
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" id="folder" name="folder" accept="image/*"
+                               webkitdirectory mozdirectory msdirectory odirectory directory multiple/>
+                        <button type="submit">Upload</button>
+                    </form>
                 </div>
                 <div class="settingLayer">
                     <table class="DOY_table">
