@@ -174,7 +174,7 @@ def get_chart(ori_db):
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
     # 그래프 그리기
-    fcChart = FusionCharts("timeseries", "ex1", 1000, 400, "chart-1", "json", timeSeries)
+    fcChart = FusionCharts("timeseries", "ex1", 960, 400, "chart-1", "json", timeSeries)
 
     # 그래프 정보 넘기기
     return fcChart.render()
@@ -187,6 +187,7 @@ def get_multi_plot(ori_db):
     df = df[df['code'] == ori_db['knps']]
     print(df)
     # curve fitting된 데이터 가져오기
+
     # 그래프 속성 및 데이터를 저장하는 변수
     db = {
         "chart": {  # 그래프 속성
@@ -221,7 +222,7 @@ def get_multi_plot(ori_db):
         })
 
     # 그래프 그리기
-    chartObj = FusionCharts('scrollline2d', 'ex1', 1000, 400, 'chart-1', 'json', json.dumps(db))
+    chartObj = FusionCharts('scrollline2d', 'ex1', 960, 400, 'chart-1', 'json', json.dumps(db))
 
     return chartObj.render()  # 그래프 정보 넘기기
 

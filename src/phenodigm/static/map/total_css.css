@@ -237,6 +237,7 @@
     #chart-1{
         position: absolute;
         top: 0px;
+        left:20px;
     }
 
     .DOYLayer{
@@ -285,7 +286,7 @@
         border-color:white;
     }
 
-    #mytable {
+    table {
     font-size: 9pt;
     }
 
