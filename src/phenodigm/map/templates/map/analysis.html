@@ -32,14 +32,14 @@
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" style="background-color:#f2f2eb; border-radius: 15px;">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
-                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1" style="color:black">분석</a>
+            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
+                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1" style="color:black">분석</a>
             </div>
 
-            <div class="predict_area" onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1';">
+            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1';">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn" href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1">예측</a>
+                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1">예측</a>
             </div>
 
             <div class="phenocam_area" onclick="location.href='/phenocam/';">
@@ -150,6 +150,9 @@
     downloadCSV(csv, filename) {
         let csvFile;
         let downloadLink;
+
+        const BOM = "\uFEFF";
+        csv = BOM + csv
 
         // CSV 파일을 위한 Blob 만들기
         csvFile = new Blob([csv], {type: "text/csv"})
