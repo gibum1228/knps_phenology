@@ -21,38 +21,35 @@
         });
     </script>
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
-    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
-            <div class="home_area">
-                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute;  top:35px; width:120px">
+            <div class="home_area" onclick="location.href='/';">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" style="background-color:#f2f2eb; border-radius: 26px;">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
-                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" style="color:black">분석</a>
+            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
+                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1" style="color:black">분석</a>
             </div>
 
-            <div class="predict_area">
-                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                <a class="predict_btn" href="/predict/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">예측</a>
+            <div class="predict_area" onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1';">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
+                <a class="predict_btn" href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1">예측</a>
             </div>
 
-            <div class="phenocam_area">
-                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+            <div class="phenocam_area" onclick="location.href='/phenocam/';">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam/">카메라</a>
             </div>
-            <p class="ver">
-                Phenodigm<br>
-                ver 1.0.0
-            </p>
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
         </div>
         <div class="middleLayer">
-            <img class="love_img" src="{%static 'map/icon/졸려반달.png'%}" alt="My Image" style="position:absolute; left:1190px; top:550px; width:500px">
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
             <div class="graphLayer">
                 <div id="chart-1">
                     {{ graph | safe }}
@@ -60,8 +57,13 @@
             </div>
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
-            </div>
+                <div class="DOYArea">
+                    {% autoescape off %}
+                        {{ dataframe }}
+                    {% endautoescape %}
+                </div>
 
+            </div>
             <div class="settingLayer">
                 <div class="settingTitle">
                     <b>그래프 설정</b>
@@ -70,7 +72,7 @@
                         <div>
                             <b class="mountainTitle">국립공원</b>
                         </div>
-                        <select class="mountainBar" name="mountain">
+                        <select class="mountainBar" name="knps">
                             <option value="" selected></option>
                             <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
                             <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
@@ -115,7 +117,7 @@
                             <option value="3">Savitzly-Golay</option> <option value="4">가우시안</option>
                         </select>
                         <b class="thresholdTitle">임계치(%)</b>
-                        <input class="threshold" type="number" name="threshold">
+                        <input class="threshold" type="text" name="threshold">
 
                         <fieldset class="graphShape">
                             <b>그래프 모양</b>

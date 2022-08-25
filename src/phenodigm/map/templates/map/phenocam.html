@@ -1,19 +1,135 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="ko">
+<html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
-    <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
+    <link rel="stylesheet" href="{%static 'map/phenocam_css.css'%}">
     <title>국립공원공단 페노다임</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $( "select[name=knps]" ).val( "{{ knps }}" );
+            $( "select[name=class_num]" ).val( "{{ class_num }}" );
+            $( "select[name=start_year]" ).val( "{{ start_year }}" );
+            $( "select[name=end_year]" ).val( "{{ end_year }}" );
+            $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
+            $( "input[name=threshold]" ).val( "{{ threshold }}" );
+            $("#shape" + "{{ shape }}").prop("checked", true);
+        });
+    </script>
+    <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" id="folder" name="folder" accept="image/*"
-               webkitdirectory mozdirectory msdirectory odirectory directory multiple/>
-        <button type="submit">Upload</button>
-    </form>
+    <div class="parentLayer">
+        <div class="leftLayer">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image"
+                 style="position:absolute; top:35px; width:120px">
+            <div class="home_area" onclick="location.href='/';">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
+                <a class="home_btn" href="/">홈</a>
+            </div>
+
+            <div class="analysis_area"
+                 onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
+                <a class="analysis_btn"
+                   href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1">분석</a>
+            </div>
+
+            <div class="predict_area"
+                 onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&';">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
+                <a class="predict_btn"
+                   href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&">예측</a>
+            </div>
+
+            <div class="phenocam_area" onclick="location.href='/phenocam/';"
+                 style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
+                <a class="phenocam_btn" href="/phenocam/" style="color:black">카메라</a>
+            </div>
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
+        </div>
+        <div class="middleLayer">
+            <div class="graphLayer">
+                그래프 영역
+                <div id="chart-1">
+                    {{ graph | safe }}
+                </div>
+            </div>
+
+            <div class="ROILayer">
+                """ 이미지 불러와 ROI 지정하는 구역"""
+
+            </div>
+            <div class="ROISetting">
+                <button>ROI 지정/더블클릭시 지정완료</button>
+                <button>ROI 파일 경로지정 버튼</button>
+                <br>
+                <br>
+                <br>
+                <br>
+                <button>이미지 파일 경로 지정 버튼</button>
+                <div class="img_list">
+                    불러온 이미지 목록 영역
+                </div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" id="folder" name="folder" accept="image/*"
+                           webkitdirectory mozdirectory msdirectory odirectory directory multiple/>
+                    <button type="submit">Upload</button>
+                </form>
+            </div>
+            <div class="settingLayer">
+                <table class="DOY_table">
+                </table>
+                <b class="settingTitle">설정</b>
+                <form method="get" action="/phenocam/" id="optionForm">
+                    <b class="startTitle">기간</b>
+                    <select class="start_year" name="start_year">
+                        <option value="2017">2017</option>
+                        <option value="2018">2018</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                    </select>
+                    <b class="endTitle">~</b>
+                    <select class="end_year" name="end_year">
+                        <option value="2017">2017</option>
+                        <option value="2018">2018</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                    </select>
+                    <br><b class="curve_fittingTitle">curve_fitting</b>
+                    <select class="curve_fit" name="curve_fit">
+                        <option value="1" selected>다중 로지스틱 함수</option>
+                        <option value="2">푸리에 변환</option>
+                        <option value="3">Savitzly-Golay</option>
+                        <option value="4">가우시안</option>
+                    </select>
+                    <b class="thresholdTitle">임계치(%)</b>
+                    <input class="threshold" type="number" name="threshold">
+
+                    <fieldset class="graphShape">
+                        <b>그래프 모양</b>
+                        <div>
+                            <input type="radio" id="shape1" name="shape" value="1" checked>
+                            <label for="shape1">연속</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="shape2" name="shape" value="2">
+                            <label for="shape2">연도</label>
+                        </div>
+                    </fieldset>
+                </form>
+                <button class="submit_btn" type="submit" form="optionForm">분석</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

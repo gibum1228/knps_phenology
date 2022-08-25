@@ -1,5 +1,3 @@
-
-
     @font-face {
     font-family: 'Source Sans Pro', sans-serif;
     src: url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@1,300&display=swap');
@@ -29,31 +27,14 @@
 
     }
 
+     .leftLayer{
+         position: absolute;
+         width: 120px;
+         height:720px;
+         left: 0px;
+         top: 0px;
 
-    .page_title{
-        position: absolute;
-        font-size:40px;
-        left: 20px;
-        top: 10px;
-
-    }
-
-    .leftLayer{
-        position: absolute;
-        width: 120px;
-        height:720px;
-        left: 0px;
-        top: 0px;
-
-        background-color:#262A33;
-    }
-
-    .map{
-        position: absolute;
-        left:20px;
-        top: 100px;
-        width: 1000px;
-
+         background-color:#262A33;
     }
 
 
@@ -197,7 +178,16 @@
         top:580px;
     }
 
-    .middleLayer{
+
+    .data_img{
+        position: absolute;
+        width : 400px;
+        left: 1250px;
+        top: 750px;
+
+    }
+
+     .middleLayer{
         position: absolute;
         width: 1160px;
         height: 720px;
@@ -205,24 +195,6 @@
         top: 0px;
         background-color: #17191f;
     }
-
-    .settingLayer{
-        position: absolute;
-        width: 1000px;
-        height: 310px;
-        left: 10px;
-        top: 410px;
-        background: #262A33;
-        border-radius: 26px;
-    }
-
-    .settingFile{
-        height:200px;
-        border-radius: 26px;
-        border-white;
-    }
-
-
 
     .graphLayer{
         position: absolute;
@@ -234,104 +206,80 @@
         border-radius: 26px;
     }
 
-    #chart-1{
+    .ROILayer{
         position: absolute;
-        top: 0px;
+        width: 700px;
+        height: 310px;
+        left: 10px;
+        top: 410px;
+        background: #262A33;
+        border-radius: 26px;
+    }
+    .ROISetting{
+        position: absolute;
+        width: 290px;
+        height: 310px;
+        left: 720px;
+        top: 410px;
+        background: #262A33;
+        border-radius: 26px;
     }
 
-    .DOYLayer{
+    .DOY_table{
         position: absolute;
-        width: 370px;
-        height: 550px;
+        width: 250px;
+        height: 250px;
+        left: 60px;
+        top: 340px;
+
+        box-sizing: border-box;
+        background:#17191f;
+        border: solid 2px white;
+        border-radius: 20px;
+        resize: none;
+        overflow:   auto;
+
+
+        font-family: 'Source Sans Pro';
+        font-size: 20px;
+        color:white
+    }
+
+    #chart-1{
+        position: absolute;
+        top: 25px;
+    }
+
+    .settingLayer{
+        position: absolute;
+        width: 380px;
+        height: 720px;
         left: 1020px;
         top: 0px;
         background: #262A33;
         border-radius: 26px;
-        font-family: 'Source Sans Pro';
-        font-size: 5px;
-        color:white
     }
 
-    .DOY_Title{
+     .settingTitle{
         position: absolute;
-        left:150px;
-        top: 10px;
-        font-size: 25px;
-
-
-    }
-    .DOYArea{
-        position: absolute;
-        width: 340px;
-        height: 400px;
-        left:10px;
-        top: 100px;
-        padding:5px;
-        font-family: 'Source Sans Pro';
-        font-size: 5px;
-        color:white;
-        overflow:scroll;
-
+        left:160px;
+        top: 5px;
+        font-size: 30px;
     }
 
-    table {
-    font-size: 9pt;
-    }
-
-
-
-    .data_img{
-        position: absolute;
-        width : 300px;
-        left:1060px;
-        top: 490px;
-
-    }
-
-
-
-
-    .settingTitle{
-        position: absolute;
-        left:440px;
-        top: 2%;
-        font-size: 25px;
-    }
-
-    .mountainTitle {
-        position: absolute;
-        left: 150px;
-        top: 80px;
-        font-size:20px;
-    }
-
-    .mountainBar{
-        position: absolute;
-        width: 200px;
-        height: 25px;
-        left: 90px;
-        top: 120px;
-        font-family:'Source Sans Pro';
-        font-size:20px;
-        border-radius: 10px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-
-    }
 
     .startTitle{
         position: absolute;
-        left: 485px;
+        left: 175px;
         top:80px;
         font-size:20px;
     }
 
     .start_year{
         position: absolute;
-        width:150px;
+        width:120px;
         height:25px;
-        left: 340px;
+        left: 40px;
         top:120px;
         border-radius: 10px;
         font-family: 'Source Sans Pro';
@@ -343,15 +291,15 @@
 
     .endTitle{
         position: absolute;
-        left: 500px;
-        top: 115px;
+        left: 190px;
+        top:120px;
     }
 
     .end_year{
         position: absolute;
-        width:150px;
+        width:120px;
         height:25px;
-        left: 520px;
+        left: 225px;
         top: 120px;
         border-radius: 10px;
         font-family: 'Source Sans Pro';
@@ -361,41 +309,19 @@
         border-color:white;
     }
 
-    .classTitle{
+     .curve_fittingTitle{
         position: absolute;
-        left: 800px;
-        top:80px;
-        font-size:20px;
-    }
-
-    .class_num{
-        position: absolute;
-        left: 740px;
-        top: 120px;
-        width: 200px;
-        height: 25px;
-        border-radius: 10px;
-        font-family:'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-
-    }
-
-    .curve_fittingTitle{
-        position: absolute;
-        left: 135px;
-        top: 160px;
-        font-size:20px;
+        left: 45px;
+        top: 150px;
+        font-size: 20px;
 
     }
 
     .curve_fit{
         position: absolute;
-        left: 95px;
-        top: 195px;
-        width:200px;
+        left: 40px;
+        top: 180px;
+        width:120px;
         height:25px;
         border-radius: 10px;
         font-family: 'Source Sans Pro';
@@ -407,16 +333,16 @@
 
     .thresholdTitle{
         position: absolute;
-        left: 470px;
-        top: 160px;
+        left: 245px;
+        top: 150px;
         font-size:20px;
     }
 
     .threshold{
         position: absolute;
-        left: 410px;
-        top: 190px;
-        width:200px;
+        left: 225px;
+        top: 180px;
+        width:120px;
         height: 20px;
         font-family: 'Source Sans Pro';
         font-size:20px;
@@ -428,8 +354,8 @@
 
     .graphShape{
         position: absolute;
-        left: 75%;
-        top: 50%;
+        left: 40px;
+        top: 225px;
         width:130px;
         height:70px;
         border-radius: 10px;
@@ -442,18 +368,20 @@
     .submit_btn{
         position: absolute;
         width:200px;
-        height:50px;
-        left:415px;
-        top:240px;
-        background-color:#f2f2eb;
+        height:70px;
+        left:90px;
+        top:85%;
+        background-color:#262A33;
         border-radius: 10px;
         border-color:white;
-        color:black;
+        color:white;
         font-family: 'Source Sans Pro';
         font-size:30px;
     }
 
     .submit_btn:hover{
-        background-color:#262A33;
-        color: white;
+        background-color:#f2f2eb;
+        color: black;
     }
+
+

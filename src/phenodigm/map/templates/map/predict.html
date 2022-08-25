@@ -2,42 +2,53 @@
 {% load static %}
 <html lang="ko">
 <head>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
     <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
     <title>국립공원공단 레인저스</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $( "select[name=knps]" ).val( "{{ knps }}" );
+            $( "select[name=class_num]" ).val( "{{ class_num }}" );
+            $( "select[name=start_year]" ).val( "{{ start_year }}" );
+            $( "select[name=end_year]" ).val( "{{ end_year }}" );
+            $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
+            $( "input[name=threshold]" ).val( "{{ threshold }}" );
+        });
+    </script>
+    <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
-            <div class="home_area">
-                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute;  top:35px; width:120px">
+            <div class="home_area" onclick="location.href='/';">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
-                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
+            <div class="analysis_area" onclick="location.href='/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';" >
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="30">
+                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1">분석</a>
             </div>
 
-            <div class="predict_area" style="background-color:#f2f2eb; border-radius: 26px;">
-                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                <a class="predict_btn" href="/predict/" style="color:black">예측</a>
+            <div class="predict_area" onclick="location.href='/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5';" style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
+                <a class="predict_btn" href="/predict/?start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&" style="color:black">예측</a>
             </div>
 
-            <div class="phenocam_area">
-                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+            <div class="phenocam_area" onclick="location.href='/phenocam/';">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam">카메라</a>
             </div>
-            <p class="ver">
-                Phenodigm<br>
-                ver 1.0.0
-            </p>
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
         </div>
         <div class="middleLayer">
-            <img class="love_img" src="{%static 'map/icon/기웃반달.png'%}" alt="My Image" style="position:absolute; left:1190px; top:550px; width:500px">
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
             <div class="graphLayer">
                 <div id="chart-1">
                     {{ graph | safe }}
@@ -46,17 +57,18 @@
 
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
+                <table class="DOY_table">
+                </table>
             </div>
-
             <div class="settingLayer">
                 <div class="settingTitle">
                     <b>그래프 설정</b>
                 </div>
-                <form method="get" action="/analysis/" id="optionForm">
+                <form method="get" action="/predict/" id="optionForm">
                     <div>
                         <b class="mountainTitle">국립공원</b>
                     </div>
-                    <select class="mountainBar" name="mountain">
+                    <select class="mountainBar" name="knps">
                         <option value="" selected></option>
                         <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
                         <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
@@ -72,23 +84,17 @@
                     </select>
                     <b class="startTitle">기간</b>
                     <select class="start_year" name="start_year">
-                        <option value="2003">2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
-                        <option value="2006">2006</option> <option value="2007">2007</option> <option value="2008">2008</option>
-                        <option value="2009">2009</option> <option value="2010">2010</option> <option value="2011">2011</option>
-                        <option value="2012">2012</option> <option value="2013">2013</option> <option value="2014">2014</option>
-                        <option value="2015">2015</option> <option value="2016">2016</option> <option value="2017">2017</option>
-                        <option value="2018">2018</option> <option value="2019">2019</option> <option value="2020">2020</option>
-                        <option value="2021">2021</option>
+                        <option value="2021">2021</option> <option value="2022">2022</option> <option value="2023">2023</option>
+                        <option value="2024">2024</option> <option value="2025">2025</option> <option value="2026">2026</option>
+                        <option value="2027">2027</option> <option value="2028">2028</option> <option value="2029">2029</option>
+                        <option value="2030">2030</option> <option value="2031">2031</option>
                     </select>
                     <b class="endTitle">~</b>
                     <select class="end_year" name="end_year">
-                        <option value="2003">2003</option> <option value="2004">2004</option> <option value="2005">2005</option>
-                        <option value="2006">2006</option> <option value="2007">2007</option> <option value="2008">2008</option>
-                        <option value="2009">2009</option> <option value="2010">2010</option> <option value="2011">2011</option>
-                        <option value="2012">2012</option> <option value="2013">2013</option> <option value="2014">2014</option>
-                        <option value="2015">2015</option> <option value="2016">2016</option> <option value="2017">2017</option>
-                        <option value="2018">2018</option> <option value="2019">2019</option> <option value="2020">2020</option>
-                        <option value="2021">2021</option>
+                        <option value="2021">2021</option> <option value="2022">2022</option> <option value="2023">2023</option>
+                        <option value="2024">2024</option> <option value="2025">2025</option> <option value="2026">2026</option>
+                        <option value="2027">2027</option> <option value="2028">2028</option> <option value="2029">2029</option>
+                        <option value="2030">2030</option> <option value="2031">2031</option>
                     </select>
                     <b class="classTitle">산림종류</b>
                     <select class="class_num" name="class_num">
@@ -104,8 +110,7 @@
                     <input class="threshold" type="number" name="threshold">
                 </form>
                 <button class="submit_btn" type="submit" form="optionForm">예측</button>
-                </div>
-
+            </div>
         </div>
     </div>
 </body>
