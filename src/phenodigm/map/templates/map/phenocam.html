@@ -24,7 +24,6 @@
     <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
-<<<<<<< HEAD
  <div class="parentLayer">
             <div class="leftLayer">
                 <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; top:35px; width:120px">
@@ -118,34 +117,8 @@
                     </form>
                     <button class="submit_btn" type="submit" form="optionForm">분석</button>
                 </div>
-=======
-    <div class="parentLayer">
-        <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image"
-                 style="position:absolute; top:35px; width:120px">
-            <div class="home_area" onclick="location.href='/';">
-                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
-                <a class="home_btn" href="/">홈</a>
-            </div>
-            <div class="analysis_area"
-                 onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
-                <a class="analysis_btn"
-                   href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1">분석</a>
-            </div>
-            <div class="predict_area"
-                 onclick="location.href='/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&';">
-                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn"
-                   href="/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.5&">예측</a>
-            </div>
-            <div class="phenocam_area" onclick="location.href='/phenocam/';"
-                 style="background-color:#f2f2eb; border-radius: 15px;">
-                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
-                <a class="phenocam_btn" href="/phenocam/" style="color:black">카메라</a>
-            </div>
-            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
->>>>>>> fe94fd99220aa3ad8695a2252c3c54b4c3943d05
+
+
         </div>
         <div class="middleLayer">
             <div class="graphLayer">
@@ -205,7 +178,7 @@
                         <option value="3">Savitzly-Golay</option>
                         <option value="4">가우시안</option>
                     </select>
-                    <b class="thresholdTitle">임계치(%)</b>
+                    <b class="thresholdTitle">임계치</b>
                     <input class="threshold" type="number" name="threshold">
 
                     <fieldset class="graphShape">
