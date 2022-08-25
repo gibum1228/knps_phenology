@@ -235,7 +235,7 @@ def export_doy(ori_db):
     # sos 기준으로 개엽일 추출
     for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-        phenophase_date = (f'{year}년도 개엽일 : {phenophase_doy}일')
+        phenophase_date = (f'{year}년 : {phenophase_doy}일')
         sos.append(phenophase_date)
 
         data = df[df['Datetime'].str[:4] == str(year)]
@@ -256,9 +256,8 @@ def export_doy(ori_db):
                 low_value += div_add
 
         phenophase_doy = format(pd.to_datetime(low) + datetime.timedelta(days=a - 1), '%Y-%m-%d')
-        phenophase_date = format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j') + '일'
-        phenophase_betw = (f'{low} 와 {high} 사이')
-
+        phenophase_date= format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j')+'일,'+phenophase_doy
+        phenophase_betw= (f'{low} ~ {high}')
         doy.append(phenophase_date)
         betwn.append(phenophase_betw)
 
@@ -267,6 +266,11 @@ def export_doy(ori_db):
     for i in range(len(doy)):
         total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
 
-    html_DataFrame = total_DataFrame.to_html(justify='left')
+
+
+
+    html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id ='mytable')
+
+
 
     return html_DataFrame
