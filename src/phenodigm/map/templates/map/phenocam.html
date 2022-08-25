@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
+    <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
+    <title>국립공원공단 페노다임</title>
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" id="folder" name="folder" accept="image/*"
+               webkitdirectory mozdirectory msdirectory odirectory directory multiple/>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
