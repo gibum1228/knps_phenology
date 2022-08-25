@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 
 
 # Chromatic Coordinate 값 연산
-def get_cc(imgs):
+def get_cc(img):
     # b, g, r 순서로 채널별 값 구하기
-    red_dn = imgs[:, :, 2]
-    blue_dn = imgs[:, :, 0]
-    green_dn = imgs[:, :, 1]
+    red_dn = img[:, :, 2]
+    blue_dn = img[:, :, 0]
+    green_dn = img[:, :, 1]
 
     # 분모에 해당하는 레드 + 블루 + 그린 색상값 더하기
     bunmo = red_dn + blue_dn + green_dn
