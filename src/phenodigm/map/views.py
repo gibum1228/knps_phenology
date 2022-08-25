@@ -18,6 +18,7 @@ import datetime
 import sys
 
 sys.path.append("/Users/beom/Desktop/git/knps_phenology/src/phenoKOR")
+sys.path.append("C:\\github\\bigleader\\knps_phenology\\src\\phenoKOR")
 import cv2 as cv
 import numpy as np
 import data_preprocessing as dp
@@ -135,6 +136,8 @@ def phenocam(request):
 # 연속된 그래프를 그려주는 메소드
 def get_chart(ori_db):
     df = pd.read_csv(root + f"data{middle}knps_final.csv")  # 데이터 가져오기
+    df = df[df['class'] == int(ori_db['class_num'])]
+    df = df[df['code'] == ori_db['knps']]
 
     data = []  # 그래프를 그리기 위한 데이터
     schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}]  # 하나의 data 구조
@@ -142,7 +145,7 @@ def get_chart(ori_db):
     year, month, day = 2003, 1, 1  # 년월일을 알기 위한 변수
 
     for _ in range(len(df)):  # data에 값 채우기
-        data.append([f"{year}-{month}-{day}", df.iloc[len(data), 2]])  # schema 형태에 맞게 데이터 추가
+        data.append([f"{year}-{month}-{day}", df.iloc[len(data), 4]])  # schema 형태에 맞게 데이터 추가
 
         day += 8  # 8일 간격씩 데이터 추가
         if month == 2:  # 2월은 윤년 여부 판단하기
@@ -166,7 +169,7 @@ def get_chart(ori_db):
 
     # 그래프 속성 설정하기
     timeSeries.AddAttribute('caption', '{"text":"식생지수 분석"}')
-    timeSeries.AddAttribute('chart', '{"theme":"candy", "exportEnabled": "1"}')
+    timeSeries.AddAttribute('chart', f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}의 {ori_db["class_num"]} 식생지수"}}')
     timeSeries.AddAttribute('subcaption', '{"text":"국립공원공단 레인저스"}')
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
@@ -179,18 +182,22 @@ def get_chart(ori_db):
 
 # 연도별 그래프를 그려주는 메소드
 def get_multi_plot(ori_db):
-    df = pd.read_csv(root + "bukhan/bukhan_DL_broadleaved_NM.csv")  # curve fitting된 데이터 가져오기
-
+    df = pd.read_csv(root + f"data{middle}knps_final.csv")
+    df = df[df['class'] == int(ori_db['class_num'])]
+    df = df[df['code'] == ori_db['knps']]
+    print(df)
+    # curve fitting된 데이터 가져오기
     # 그래프 속성 및 데이터를 저장하는 변수
     db = {
         "chart": {  # 그래프 속성
             "exportEnabled": "1",
+            "exportfilename" : f"{ori_db['knps']}의 {ori_db['class_num']} 식생지수",
             "bgColor": "#262A33",
             "bgAlpha": "100",
             "showBorder": "0",
             "showvalues": "0",
             "numvisibleplot": "12",
-            "caption": "식생지수 분석",
+            "caption": f"{ori_db['knps']}의 {ori_db['class_num']}식생지수 분석",
             "subcaption": "국립공원공단 레인저스",
             "yaxisname": "EVI",
             "theme": "candy",
@@ -210,8 +217,7 @@ def get_multi_plot(ori_db):
             "seriesname": str(now),  # 레이블 이름
             # 해당 연도에 시작 (1월 1일)부터 (12월 31)일까지의 EVI 값을 넣기
             "data": [{"value": i} for i in
-                     df[(df[df.columns[0]] >= 365 * (now - 2003)) & (df[df.columns[0]] <= 365 * (now - 2002))][
-                         df.columns[2]]]
+                     df[df['date'].str[:4] == str(now)].avg]
         })
 
     # 그래프 그리기
@@ -221,8 +227,9 @@ def get_multi_plot(ori_db):
 
 
 def export_doy(ori_db):
-    df = pd.read_csv(root + "bukhan/bukhan_DL_broadleaved_NM.csv")
-    df_sos = pd.read_csv(root + "bukhan/bukhan_broadleaved_NM.csv")
+    df = pd.read_csv(root + f"data{middle}knps_final.csv")
+    df_sos = pd.read_csv(root + f"data{middle}knps_sos.csv")
+    df_sos = df_sos[['year',ori_db['knps']+'_'+ori_db['class_num']]]
     df_sos.columns = ['year', 'sos']
 
     phenophase_date = ''
@@ -238,15 +245,15 @@ def export_doy(ori_db):
         phenophase_date = (f'{year}년 : {phenophase_doy}일')
         sos.append(phenophase_date)
 
-        data = df[df['Datetime'].str[:4] == str(year)]
+        data = df[df['date'].str[:4] == str(year)]
         thresh = np.min(data['avg']) + (np.max(data['avg']) - np.min(data['avg'])) * (
             float(ori_db["threshold"]))  ##개엽일의 EVI 값
 
         ## 개엽일 사이값 찾기
-        high = data[data['avg'] >= thresh]['Datetime'].iloc[0]
-        low = data.Datetime[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[0]
-        high_value = data.avg[data['Datetime'] == high].to_list()[0]  ## high avg 값만 추출
-        low_value = data.avg[data['Datetime'] == low].to_list()[0]  ## low avg 값만 추출
+        high = data[data['avg'] >= thresh]['date'].iloc[0]
+        low = data.date[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[0]
+        high_value = data.avg[data['date'] == high].to_list()[0]  ## high avg 값만 추출
+        low_value = data.avg[data['date'] == low].to_list()[0]  ## low avg 값만 추출
         div_add = (high_value - low_value) / 8
 
         for a in range(8):
