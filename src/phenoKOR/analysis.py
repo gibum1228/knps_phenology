@@ -1,12 +1,12 @@
 # 메서드
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
-import math
-from datetime import datetime
 import numpy as np
+from datetime import datetime
 from sklearn.linear_model import LinearRegression
 from scipy.optimize import minimize
-import os
+from scipy.signal import savgol_filter
+import cv2
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -198,22 +198,83 @@ def Rangers_DL(path, park, class_input, start_year, end_year):
     return data_final, sos_list
 
 
-# 국립공원 22개 리스트
-parks = ['bukhan','byeonsan','chiak','dadohae','deogyu','gaya','gyeongju','gyeryong','halla','hallyeo','jiri',
-         'juwang','mudeung','naejang','odae','seorak','sobaek','songni','taean','taebaek','wolchul','worak']
+# # 국립공원 22개 리스트
+# parks = ['bukhan','byeonsan','chiak','dadohae','deogyu','gaya','gyeongju','gyeryong','halla','hallyeo','jiri',
+#          'juwang','mudeung','naejang','odae','seorak','sobaek','songni','taean','taebaek','wolchul','worak']
+#
+#
+# Rangers_df = pd.DataFrame(columns=['code','class','date','avg','DOY'])
+# Rangers_sos = pd.DataFrame(index=range(2003,2022))
+#
+# for park in parks:
+#     for class_input in range(4):
+#         park_df, sos_df = Rangers_DL(path='C:/Users/cdbre/Desktop/Project/data/', park=park, class_input=class_input,
+#                                      start_year=2003, end_year=2021)
+#         Rangers_df = pd.concat([Rangers_df, park_df], axis=0)
+#
+#         sos_df = pd.DataFrame(sos_df, index=range(2003,2022), columns=[f'{park}_{class_input}'])
+#         Rangers_sos = pd.concat([Rangers_sos, sos_df], axis=1)
+#
+# Rangers_df.to_csv('C:/Users/cdbre/Desktop/Project/data/FuckYou_LAST.csv')
+# Rangers_sos.to_csv('C:/Users/cdbre/Desktop/Project/data/FuckYouSOS_LAST.csv')
 
 
-Rangers_df = pd.DataFrame(columns=['code','class','date','avg','DOY'])
-Rangers_sos = pd.DataFrame(index=range(2003,2022))
 
-for park in parks:
-    for class_input in range(4):
-        park_df, sos_df = Rangers_DL(path='C:/Users/cdbre/Desktop/Project/data/', park=park, class_input=class_input,
-                                     start_year=2003, end_year=2021)
-        Rangers_df = pd.concat([Rangers_df, park_df], axis=0)
+# Savitzky-Golay Function
+def Rangers_SG(path, park, class_input, start_year, end_year):
 
-        sos_df = pd.DataFrame(sos_df, index=range(2003,2022), columns=[f'{park}_{class_input}'])
-        Rangers_sos = pd.concat([Rangers_sos, sos_df], axis=1)
+    data = pd.read_csv(path + 'knps_final.csv')  # 데이터 불러오기
+    data = data[(data['code'] == park) & (data['class'] == class_input)]  # 국립 공원과 산림 선정
 
-Rangers_df.to_csv('C:/Users/cdbre/Desktop/Project/data/FuckYou_LAST.csv')
-Rangers_sos.to_csv('C:/Users/cdbre/Desktop/Project/data/FuckYouSOS_LAST.csv')
+    each_year_list = []
+    for each_date in data['date']:
+        each_date = int(each_date[:4])
+        each_year_list.append(each_date)
+    data['Year'] = each_year_list
+
+    data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]  # 보고 싶은 연도 설정 반영
+
+    data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))
+    data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 첫 번째 연도 기준으로 DOY 누적 게산
+    data.index = data['DOY_CUM']
+
+    # Scipy 내부에 있는 savgol_filter 활용
+    data['smoothed_1dg'] = savgol_filter(data.avg, window_length=5, polyorder=1)
+
+    data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY', 'smoothed_1dg']]
+
+    return data.smoothed_1dg
+
+
+# Gaussian Function
+def Rangers_GSN(path, park, class_input, start_year, end_year):
+
+    data = pd.read_csv(path + 'knps_final.csv')  # 데이터 불러오기
+    data = data[(data['code'] == park) & (data['class'] == class_input)]  # 국립 공원과 산림 선정
+
+    each_year_list = []
+    for each_date in data['date']:
+        each_date = int(each_date[:4])
+        each_year_list.append(each_date)
+    data['Year'] = each_year_list
+
+    data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]  # 보고 싶은 연도 설정 반영
+
+    data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))
+    data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 첫 번째 연도 기준으로 DOY 누적 게산
+    data.index = data['DOY_CUM']
+
+    # Gaussian Filtering
+    kernel1d = cv2.getGaussianKernel(46*(end_year - start_year + 1), 1)
+    kernel2d = np.outer(kernel1d, kernel1d.transpose())
+    data['Gaussian'] = cv2.filter2D(np.array(data.avg), -1, kernel2d).reshape(-1).tolist() # convolve
+
+    data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY', 'Gaussian']]
+
+    return data.Gaussian
+
+
+
+
+
+
