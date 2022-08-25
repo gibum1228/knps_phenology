@@ -41,7 +41,7 @@ def index(request):
         # 국립공원 대표 이미지 가져오기
         pic = base64.b64encode(open(f'../resource/{name[i]}.png', 'rb').read()).decode()
         # 국립공원 대표 이미지 클릭시 해당 분석 페이지로 이동하는 html 태그 설정
-        image_tag = f'<div style="text-align:center; "><a href="http://127.0.0.1:8000/analysis/?knps={name[i]}&start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" target="_top"><img src="data:image/png;base64,{pic}" width="200" height="150"></a></div>'
+        image_tag = f'<div style="text-align:center; "><a href="http://127.0.0.1:8000/analysis/?knps={name[i]}&start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1&threshold=0.4" target="_top"><img src="data:image/png;base64,{pic}" width="200" height="150"></a></div>'
         # iframe 생성
         iframe = folium.IFrame(image_tag, width=220, height=170)
         # html 띄울 popup 객체 생성
@@ -168,9 +168,9 @@ def get_chart(ori_db):
     timeSeries = TimeSeries(fusionTable)  # 타임시리즈 만들기
 
     # 그래프 속성 설정하기
-    timeSeries.AddAttribute('caption', '{"text":"식생지수 분석"}')
-    timeSeries.AddAttribute('chart', f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}의 {ori_db["class_num"]} 식생지수"}}')
-    timeSeries.AddAttribute('subcaption', '{"text":"국립공원공단 레인저스"}')
+    timeSeries.AddAttribute('caption', f'{{"text":"EVI of {ori_db["knps"]}"}}')
+    timeSeries.AddAttribute('chart', f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}_{ori_db["class_num"]}_{ori_db["start_year"]}_{ori_db["end_year"]}"}}')
+    timeSeries.AddAttribute('subcaption', f'{{"text":"class_num : {ori_db["class_num"]}"}}')
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
     # 그래프 그리기
@@ -192,14 +192,14 @@ def get_multi_plot(ori_db):
     db = {
         "chart": {  # 그래프 속성
             "exportEnabled": "1",
-            "exportfilename" : f"{ori_db['knps']}의 {ori_db['class_num']} 식생지수",
+            "exportfilename" : f"{ori_db['knps']}_{ori_db['class_num']}_{ori_db['start_year']}_{ori_db['end_year']}",
             "bgColor": "#262A33",
             "bgAlpha": "100",
             "showBorder": "0",
             "showvalues": "0",
             "numvisibleplot": "12",
-            "caption": f"{ori_db['knps']}의 {ori_db['class_num']}식생지수 분석",
-            "subcaption": "국립공원공단 레인저스",
+            "caption": f"EVI of {ori_db['knps']}",
+            "subcaption": f"class_num : {ori_db['class_num']}",
             "yaxisname": "EVI",
             "theme": "candy",
             "drawAnchors": "0",
@@ -239,7 +239,7 @@ def export_doy(ori_db):
     sos = []
     doy = []
     betwn = []
-
+        
     # sos 기준으로 개엽일 추출
     for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
@@ -247,8 +247,8 @@ def export_doy(ori_db):
         sos.append(phenophase_date)
 
         data = df[df['date'].str[:4] == str(year)]
-        thresh = np.min(data['avg']) + (np.max(data['avg']) - np.min(data['avg'])) * (
-            float(ori_db["threshold"]))  ##개엽일의 EVI 값
+        thresh = np.min(data['avg']) + ((np.max(data['avg']) - np.min(data['avg'])) * (
+            float(ori_db["threshold"])))  ##개엽일의 EVI 값
 
         ## 개엽일 사이값 찾기
         high = data[data['avg'] >= thresh]['date'].iloc[0]
@@ -269,7 +269,7 @@ def export_doy(ori_db):
         doy.append(phenophase_date)
         betwn.append(phenophase_betw)
 
-    total_DataFrame = pd.DataFrame(columns=['SOS 개엽일', '임계치 개엽일', '임계치 오차범위'])
+    total_DataFrame = pd.DataFrame(columns=['SOS기준 개엽일', '임계치 개엽일', '임계치 오차범위'])
 
     for i in range(len(doy)):
         total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
