@@ -17,10 +17,12 @@ import numpy as np
 import datetime
 import sys
 
+
 sys.path.append("/Users/beom/Desktop/git/knps_phenology/src/phenoKOR")
 sys.path.append("C:\\github\\bigleader\\knps_phenology\\src\\phenoKOR")
 import cv2 as cv
 import numpy as np
+import phenoKOR
 import data_preprocessing as dp
 import matplotlib.pyplot as plt
 
@@ -132,10 +134,10 @@ def phenocam(request):
 
 # 연속된 그래프를 그려주는 메소드
 def get_chart(ori_db):
-    df = pd.read_csv(root + f"data{middle}knps_final.csv")  # 데이터 가져오기
+    df = pd.read_csv(root + f"data{middle}knps_final.csv", index_col = 0)  # 데이터 가져오기
     df = df[df['class'] == int(ori_db['class_num'])]
     df = df[df['code'] == ori_db['knps']]
-    df = df[(df['date'].str[:4] >= ori_db['start_year']) & (df['date'].str[:4] <= ori_db['end_year']) ]
+    df, df_sos  = phenoKOR.curve_fit(df, ori_db)
 
 
     data = []  # 그래프를 그리기 위한 데이터
@@ -185,7 +187,7 @@ def get_multi_plot(ori_db):
     df = pd.read_csv(root + f"data{middle}knps_final.csv")
     df = df[df['class'] == int(ori_db['class_num'])]
     df = df[df['code'] == ori_db['knps']]
-    print(df)
+
     # curve fitting된 데이터 가져오기
 
     # 그래프 속성 및 데이터를 저장하는 변수
@@ -228,10 +230,9 @@ def get_multi_plot(ori_db):
 
 
 def export_doy(ori_db):
-    df = pd.read_csv(root + f"data{middle}knps_final.csv")
-    df_sos = pd.read_csv(root + f"data{middle}knps_sos.csv")
-    df_sos = df_sos[['year',ori_db['knps']+'_'+ori_db['class_num']]]
-    df_sos.columns = ['year', 'sos']
+    df = pd.read_csv(root + f"data{middle}knps_final.csv", index_col = 0)
+    df = df[df['class'] == int(ori_db['class_num'])]
+    df = df[df['code'] == ori_db['knps']]
 
     phenophase_date = ''
     phenophase_betw = ''
@@ -239,20 +240,31 @@ def export_doy(ori_db):
     sos = []
     doy = []
     betwn = []
-        
-    # sos 기준으로 개엽일 추출
-    for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-        phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-        phenophase_date = (f'{year}년 : {phenophase_doy}일')
-        sos.append(phenophase_date)
 
+
+    # sos 기준으로 개엽일 추출
+    if ori_db['curve_fit'] == '1':
+        df, df_sos = phenoKOR.curve_fit(df, ori_db)
+        df_sos.columns = ['year', 'sos']
+
+        for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
+
+            phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            phenophase_date = (f'{year}년 : {phenophase_doy}일')
+            sos.append(phenophase_date)
+
+    else:
+        df, df_sos = phenoKOR.curve_fit(df, ori_db)
+
+
+    for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         data = df[df['date'].str[:4] == str(year)]
         thresh = np.min(data['avg']) + ((np.max(data['avg']) - np.min(data['avg'])) * (
             float(ori_db["threshold"])))  ##개엽일의 EVI 값
 
         ## 개엽일 사이값 찾기
         high = data[data['avg'] >= thresh]['date'].iloc[0]
-        low = data.date[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[0]
+        low = data.date[[data[data['avg'] >= thresh].index[0] - 8]].to_list()[0]
         high_value = data.avg[data['date'] == high].to_list()[0]  ## high avg 값만 추출
         low_value = data.avg[data['date'] == low].to_list()[0]  ## low avg 값만 추출
         div_add = (high_value - low_value) / 8
@@ -264,26 +276,25 @@ def export_doy(ori_db):
                 low_value += div_add
 
         phenophase_doy = format(pd.to_datetime(low) + datetime.timedelta(days=a - 1), '%Y-%m-%d')
-        phenophase_date= format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j')+'일,'+phenophase_doy
-        phenophase_betw= (f'{low} ~ {high}')
+        phenophase_date = format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'),
+                                     '%j') + '일,' + phenophase_doy
+        phenophase_betw = (f'{low} ~ {high}')
         doy.append(phenophase_date)
         betwn.append(phenophase_betw)
 
-    total_DataFrame = pd.DataFrame(columns=['SOS기준 개엽일', '임계치 개엽일', '임계치 오차범위'])
-
-    for i in range(len(doy)):
-        total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
 
 
-
-
+    if ori_db['curve_fit'] == '1':
+        total_DataFrame = pd.DataFrame(columns=['SOS기준 개엽일', '임계치 개엽일', '임계치 오차범위'])
+        for i in range(len(doy)):
+            total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
+    else:
+        total_DataFrame = pd.DataFrame(columns=['임계치 개엽일', '임계치 오차범위'])
+        for i in range(len(doy)):
+            total_DataFrame.loc[i] = [doy[i], betwn[i]]
 
     html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id ='mytable')
-
-
-
     return html_DataFrame
-
 
 
 

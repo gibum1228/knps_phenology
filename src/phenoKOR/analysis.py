@@ -19,6 +19,7 @@ def Rangers_DL(input_data, start_year, end_year):
 
     data = input_data
 
+
     data_final = pd.DataFrame(columns=['code', 'class', 'date', 'avg', 'DOY'])  # return 할 데이터 프레임
     sos_list = []  # return 할 SOS 값
 
@@ -31,7 +32,7 @@ def Rangers_DL(input_data, start_year, end_year):
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
     data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 시작 연도 기준 DOY 누적 게산
-    data_final.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
+
 
     # Normalize 함수
     def Normalize(x, sf):
@@ -169,7 +170,12 @@ def Rangers_DL(input_data, start_year, end_year):
         data_final = pd.concat([data_final, data_re])  # 반환할 Double Logistic 데이터 프레임에 추가
         sos_list.append(np.floor(opt_param[2]))  # 반환할 SOS 데이터 프레임에 추가
 
-    sos_df = pd.Series(sos_list, index=range(start_year, end_year+1))
+
+    sos_df = pd.DataFrame()
+    sos_df['Year'] = [i for i in range(start_year, end_year+1)]
+    sos_df['sos_DOY'] = sos_list
+
+      # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
 
     return data_final, sos_df
 
@@ -200,7 +206,8 @@ def Rangers_SG(data_input, start_year, end_year):
 
     data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
 
-    return data
+    sos_df = [0]
+    return data, sos_df
 
 
 # Gaussian Function
@@ -230,5 +237,5 @@ def Rangers_GSN(data_input, start_year, end_year):
     data['avg'] = cv2.filter2D(np.array(data.avg), -1, kernel2d).reshape(-1).tolist() # convolve
 
     data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
-
-    return data
+    sos_df = [0]
+    return data, sos_df
