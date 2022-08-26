@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 root, middle = dp.get_info()
 
 
+
 # 홈 페이지
 @xframe_options_exempt  # iframe 허용하기 위한 태그
 def index(request):
@@ -134,14 +135,17 @@ def get_chart(ori_db):
     df = pd.read_csv(root + f"data{middle}knps_final.csv")  # 데이터 가져오기
     df = df[df['class'] == int(ori_db['class_num'])]
     df = df[df['code'] == ori_db['knps']]
+    df = df[(df['date'].str[:4] >= ori_db['start_year']) & (df['date'].str[:4] <= ori_db['end_year']) ]
+
 
     data = []  # 그래프를 그리기 위한 데이터
     schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}]  # 하나의 data 구조
     info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]  # 월별 일 수 정보
-    year, month, day = 2003, 1, 1  # 년월일을 알기 위한 변수
+    year, month, day = int(ori_db['start_year']), 1, 1  # 년월일을 알기 위한 변수
+
 
     for _ in range(len(df)):  # data에 값 채우기
-        data.append([f"{year}-{month}-{day}", df.iloc[len(data), 4]])  # schema 형태에 맞게 데이터 추가
+        data.append([f"{year}-{month}-{day}", df.iloc[len(data)]['avg']])  # schema 형태에 맞게 데이터 추가
 
         day += 8  # 8일 간격씩 데이터 추가
         if month == 2:  # 2월은 윤년 여부 판단하기
@@ -273,8 +277,63 @@ def export_doy(ori_db):
 
 
 
+
     html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id ='mytable')
 
 
 
     return html_DataFrame
+
+
+
+
+def get_phenocamChart(ori_db):
+    df = pd.read_csv(root + f"data{middle}knps_final.csv")  # 데이터 가져오기
+    df1 = df[df['date'].str[:4] == '2013']
+    df2 = df[df['date'].str[:4] == '2014']
+
+    data = []  # 그래프를 그리기 위한 데이터
+    schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "Type", "type": "string"}, {"name": "value", "type":"number"}]  # 하나의 data 구조
+    info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]  # 월별 일 수 정보
+    year, month, day = 2003, 1, 1  # 년월일을 알기 위한 변수
+
+    for _ in range(len(df1)):  # data에 값 채우기
+        data.append([f"{year}-{month}-{day}", 'Gcc', df1.iloc[len(data)]['avg']])
+        data.append([f"{year}-{month}-{day}", 'Rcc', df2.iloc[len(data)]['avg']])# schema 형태에 맞게 데이터 추가
+
+        day += 8  # 8일 간격씩 데이터 추가
+        if month == 2:  # 2월은 윤년 여부 판단하기
+            day_limit = dp.get_Feb_day(year)
+        else:  # 2월이 아니면 해당 월의 일 수 가져오기
+            day_limit = info_day[month]
+
+        # 다음 월로 넘어가야 한다면,
+        if day > day_limit:
+            day -= day_limit  # 새로운 일
+            month += 1  # 다음 월로 가기
+
+            if month > 12:  # 다음 연도로 넘어가야 한다면,
+                year += 1
+                # 무조건 1월 1일부터 시작하기 때문에 month와 day를 1로 초기화
+                month = 1
+                day = 1
+
+
+
+    fusionTable = FusionTable(json.dumps(schema), json.dumps(data))  # 데이터 테이블 만들기
+    timeSeries = TimeSeries(fusionTable)  # 타임시리즈 만들기
+
+    timeSeries.AddAttribute('caption', f'{{"text":"EVI of {ori_db["knps"]}"}}')
+    timeSeries.AddAttribute('chart',
+                            f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}_{ori_db["class_num"]}_{ori_db["start_year"]}_{ori_db["end_year"]}"}}')
+    timeSeries.AddAttribute('subcaption', f'{{"text":"class_num : {ori_db["class_num"]}"}}')
+    timeSeries.AddAttribute('series', '"Type"')
+    timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"Ccc&Rcc"}]')
+
+    # 그래프 그리기
+    fcChart = FusionCharts("timeseries", "ex1", 960, 400, "chart-1", "json", timeSeries)
+
+    # 그래프 정보 넘기기
+    return fcChart.render()
+
+
