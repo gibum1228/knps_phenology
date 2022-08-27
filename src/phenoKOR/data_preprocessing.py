@@ -12,22 +12,26 @@ import phenoKOR as pk
 # root 정보와 슬래쉬 정보 가져오기
 def get_info():
     middle = "/" if platform.system() != "Windows" else "\\"  # 운영체제에 따라 슬래쉬 설정
-    index = os.getcwd().find('knps_phenology') # root 디렉토리
-    root = os.getcwd()[:index + 15] # root 디렉토리까지 자르기
+    index = os.getcwd().find('knps_phenology') # knps_phenology가 있는 인덱스 찾기
+    root = os.getcwd()[:index + 14] # "*/knps_phenology"
 
     return root, middle
 
 
 # 최종 통합 데이터 파일에서 원하는 국립공원 산림 데이터 로드하기
-def load_final_data(knps, class_num):
-    df = pd.read_csv(f"{root}data{middle}knps_final.csv")  # 데이터 가져오기
+def load_final_data(knps, class_num, all: bool=False):
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final.csv")  # 데이터 가져오기
 
-    # 조건에 맞는 데이터 추출
-    return df[(df["code"] == knps) & (df["class"] == class_num)].sort_values('date')
+    # 전체 데이터를 추출할지 여부 판단
+    if not all:
+        # 조건에 맞는 데이터만 반환
+        return df[(df["code"] == knps) & (df["class"] == class_num)].sort_values('date')
+    else:
+        return df # 전체 데이터 반환
 
 
 # 마스크 정보가 담긴 mat 파일 가져오기
-def load_mask(path, filename):
+def load_mask_for_mat(path, filename):
     mask = scipy.io.loadmat(path + filename) # scipy.io
 
     return mask['roiimg'] # mat 파일을 호출하면 dict type인데 마스크 정보를 담고 있는 'roiimg'를 return
@@ -66,6 +70,16 @@ def load_image_for_local(path):
     return ori_df, np.array(info["imgs"])
 
 
+# 바이트 파일에서 이미지 파일로 변환
+def byte2img(byte):
+    decoding_data = io.BytesIO(byte) # 디코딩 된 파일
+    img_pil = Image.open(decoding_data)  # 이미지 데이터로 만들기
+    img_numpy = np.array(img_pil)  # ndarray로 형변환
+    img = cv.cvtColor(img_numpy, cv.COLOR_RGB2BGR)  # opencv에 맞게 RGB -> BGR로 변경
+
+    return img # 이미지 파일 반환
+
+
 # 웹에서 이미지 데이터 가져오기
 def load_image_for_web(folder, img_mask): # folder: dictionary, img_mask: ndarray
     # 입력 받은 이미지 정보를 저장할 데이터 프레임
@@ -79,10 +93,7 @@ def load_image_for_web(folder, img_mask): # folder: dictionary, img_mask: ndarra
         code, year, month, day, *_ = filename.split('_') # 파일 이름에서 정보 추출
 
         img_byte = img_info.read() # byte 파일 받기
-        data = io.BytesIO(img_byte) # 디코딩 적용
-        img_pil = Image.open(data) # 이미지 데이터로 만들기
-        img_numpy = np.array(img_pil) # ndarray로 형변환
-        img = cv.cvtColor(img_numpy, cv.COLOR_RGB2BGR) # opencv에 맞게 RGB -> BGR로 변경
+        img = byte2img(img_byte) # 바이트 데이터를 이미지 데이터로 변환
 
         # 이미지와 마스크로 관심영역만 값이 남아 있는(활성화 된) 새로운 이미지 추출
         img_roi = load_roi(img, img_mask)

@@ -35,7 +35,8 @@ def show_plot(y, x = []):
 
 
 # ROI 마스크 PNG 파일 추출
-def draw_mask():
+def draw_mask(img):
+    print("in draw_mask")
     pts = []  # 마우스로 클릭한 포인트 저장
     mask_list = []  # 마스크 리스트 저장
 
@@ -94,12 +95,13 @@ def draw_mask():
 
         cv.imshow('image', img2)  # 이미지 화면 출력
 
-    img = cv.imread("C:/Users/kub84/Desktop/jir031_2021_06_01_132807.JPG")  # 저장된 이미지 읽어 오기
     img = cv.resize(img, (600, 400))
+    cv.startWindowThread()
     cv.namedWindow('image')  # 새로운 윈도우 창 이름 설정
     cv.setMouseCallback('image', draw_mask_eventListener)  # 마우스 이벤트가 발생했을 때 전달할 함수
 
     while True:
+        print("-ing...")
         key = cv.waitKey(1) & 0xFF  # SOH
         if key == 27:  # ESC
             break
