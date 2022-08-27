@@ -16,8 +16,8 @@
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
             $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
-            $( "input[name=threshold]" ).val( "{{ threshold }}" );
-            $("#shape" + "{{ shape }}").prop("checked", true);
+            $( "select[name=threshold]" ).val( "{{ threshold }}" );
+            $( "#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
@@ -32,14 +32,14 @@
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1';" style="background-color:#f2f2eb; border-radius: 15px;">
+            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A';" style="background-color:#f2f2eb; border-radius: 15px;">
                 <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
-                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1" style="color:black">분석</a>
+                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A" style="color:black">분석</a>
             </div>
 
-            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.4&';">
+            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P';">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.4&">예측</a>
+                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P">예측</a>
             </div>
 
             <div class="phenocam_area" onclick="location.href='/phenocam/';">
