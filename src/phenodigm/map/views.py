@@ -367,15 +367,18 @@ def open_model_processing(ori_db):
     with open(root + f"data{middle}model{middle}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
 
-    periods = 0
+    periods = 4
     for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-        if i % 4 == 0:
-            periods += 370
+
+        if i % 4 == 1:
+            periods += 366
+
         else:
-            periods += 369
+            periods += 365
 
     future = m.make_future_dataframe(periods)
     forecast = m.predict(future)
+
 
     df = forecast[['ds', 'yhat']]
     df.columns = ['date', 'avg']
@@ -389,12 +392,13 @@ def open_model_processing(ori_db):
     df['DOY'] = doy_list
 
     # df, df_sos = phenoKOR.curve_fit(df, ori_db)
-    if ori_db['shape'] == '1':
-        df = df[(df['date'].str[:4] >= ori_db['start_year'])]
-    else :
-        df, df_sos = phenoKOR.curve_fit(df, ori_db)
+
+    df = df[(df['date'].str[:4] >= ori_db['start_year'])]
+
+
 
     df = df.reset_index(drop=True)
+
 
 
     return (df)
