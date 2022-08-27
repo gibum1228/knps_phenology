@@ -18,9 +18,22 @@ python >= 3.6
 ```
 
 # 2. Start
-- runserver
+- start server
+*you should be located '*/knps_phenology'
 ```
-# pwd -> */knps_phenology
-cd src/phenodigm/phenodigm
+cd src/phenodigm
 python manage.py runserver
 ```
+- go http://localhost:8000
+
+# 페노다임 설명
+
+### why
+
+### what
+
+### how
+
+### result
+
+### so what
