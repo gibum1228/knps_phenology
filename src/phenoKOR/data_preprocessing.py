@@ -41,7 +41,8 @@ def load_mask_for_mat(path, filename):
 def load_roi(img, mask):
     new_img = np.zeros_like(img) # 검은 배경만 가지는 이미지 데이터 생성
 
-    new_img[mask > 0] = img[mask > 0] # 관심영역 부분의 픽셀만 가져와 적용
+    # new_img[mask > 0] = img[mask > 0] # 관심영역 부분의 픽셀만 가져와 적용
+    new_img = np.where(mask == 255, img, 0)  # 첫번째 매개변수 조건에 따라 참이면 값 유지, 거짓이면 0으로 변경
 
     return new_img
 
