@@ -16,7 +16,8 @@
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
             $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
-            $( "input[name=threshold]" ).val( "{{ threshold }}" );
+            $( "select[name=threshold]" ).val( "{{ threshold }}" );
+            $( "#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
@@ -31,14 +32,14 @@
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1';" >
+            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A';" >
                 <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
-                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1">분석</a>
+                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A">분석</a>
             </div>
 
-            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.4';" style="background-color:#f2f2eb; border-radius: 15px;">
+            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P';" style="background-color:#f2f2eb; border-radius: 15px;">
                 <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2021&end_year=2021&class_num=0&curve_fit=1&threshold=0.4&" style="color:black">예측</a>
+                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P" style="color:black">예측</a>
             </div>
 
             <div class="phenocam_area" onclick="location.href='/phenocam/';">
@@ -57,8 +58,12 @@
 
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
-                <table class="DOY_table">
-                </table>
+                <div class="DOYArea">
+                    {% autoescape off %}
+                        {{ dataframe }}
+                    {% endautoescape %}
+                </div>
+                <button id="csvDownloadButton">CSV로 내보내기</button>
             </div>
             <div class="settingLayer">
                 <div class="settingTitle">
@@ -84,17 +89,18 @@
                     </select>
                     <b class="startTitle">기간</b>
                     <select class="start_year" name="start_year">
-                        <option value="2021">2021</option> <option value="2022">2022</option> <option value="2023">2023</option>
-                        <option value="2024">2024</option> <option value="2025">2025</option> <option value="2026">2026</option>
-                        <option value="2027">2027</option> <option value="2028">2028</option> <option value="2029">2029</option>
-                        <option value="2030">2030</option> <option value="2031">2031</option>
+                        <option value="2022">2022</option> <option value="2023">2023</option> <option value="2024">2024</option>
+                        <option value="2025">2025</option> <option value="2026">2026</option> <option value="2027">2027</option>
+                        <option value="2028">2028</option> <option value="2029">2029</option> <option value="2030">2030</option>
+
+
                     </select>
                     <b class="endTitle">~</b>
                     <select class="end_year" name="end_year">
-                        <option value="2021">2021</option> <option value="2022">2022</option> <option value="2023">2023</option>
-                        <option value="2024">2024</option> <option value="2025">2025</option> <option value="2026">2026</option>
-                        <option value="2027">2027</option> <option value="2028">2028</option> <option value="2029">2029</option>
-                        <option value="2030">2030</option> <option value="2031">2031</option>
+                        <option value="2022">2022</option> <option value="2023">2023</option> <option value="2024">2024</option>
+                        <option value="2025">2025</option> <option value="2026">2026</option> <option value="2027">2027</option>
+                        <option value="2028">2028</option> <option value="2029">2029</option> <option value="2030">2030</option>
+
                     </select>
                     <b class="classTitle">산림종류</b>
                     <select class="class_num" name="class_num">
@@ -110,10 +116,84 @@
                     <select class="threshold" name="threshold">
                         <option value="0.4">40%</option><option value="0.5">50%</option>
                     </select>
+                    <fieldset class="graphShape">
+                            <b>그래프 모양</b>
+                            <div>
+                              <input type="radio" id="shape1" name="shape" value="1" checked>
+                              <label for="shape1">연속</label>
+                            </div>
+                            <div>
+                              <input type="radio" id="shape2" name="shape" value="2">
+                              <label for="shape2">연도</label>
+                            </div>
+                    </fieldset>
                 </form>
                 <button class="submit_btn" type="submit" form="optionForm">예측</button>
             </div>
         </div>
     </div>
 </body>
+<script type="text/javascript">
+    class ToCSV {
+        constructor() {
+        // CSV 버튼에 이벤트 등록
+        document.querySelector('#csvDownloadButton').addEventListener('click', e => {
+
+            e.preventDefault()
+            this.getCSV("{{knps}}"+ "_" + {{class_num}} + "_" + {{start_year}} + "_" + {{end_year}} +"_"+ "DOY" +  ".csv")
+        })
+    }
+
+    downloadCSV(csv, filename) {
+        let csvFile;
+        let downloadLink;
+
+        const BOM = "\uFEFF";
+        csv = BOM + csv
+
+        // CSV 파일을 위한 Blob 만들기
+        csvFile = new Blob([csv], {type: "text/csv"})
+
+        // Download link를 위한 a 엘리먼스 생성
+        downloadLink = document.createElement("a")
+
+        // 다운받을 csv 파일 이름 지정하기
+        downloadLink.download = filename;
+
+        // 위에서 만든 blob과 링크를 연결
+        downloadLink.href = window.URL.createObjectURL(csvFile)
+
+        // 링크가 눈에 보일 필요는 없으니 숨겨줍시다.
+        downloadLink.style.display = "none"
+
+        // HTML 가장 아래 부분에 링크를 붙여줍시다.
+        document.body.appendChild(downloadLink)
+
+        // 클릭 이벤트를 발생시켜 실제로 브라우저가 '다운로드'하도록 만들어줍시다.
+        downloadLink.click()
+    }
+
+    getCSV(filename) {
+        // csv를 담기 위한 빈 Array를 만듭시다.
+        const csv = []
+        const rows = document.querySelectorAll("#mytable tr")
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll("td, th")
+
+            for (let j = 0; j < cols.length; j++)
+                row.push(cols[j].innerText)
+
+            csv.push(row.join(","))
+        }
+
+        // Download CSV
+        this.downloadCSV(csv.join("\n"), filename)
+    }
+}
+
+document.addEventListener('DOMContentLoaded', e => {
+    new ToCSV()
+})
+</script>
 </html>
