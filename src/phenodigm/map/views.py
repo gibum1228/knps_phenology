@@ -1,5 +1,8 @@
 import io
 from PIL import Image
+from django.views.decorators import gzip
+from django.http import StreamingHttpResponse
+import threading
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -16,13 +19,19 @@ import pandas as pd
 import numpy as np
 import datetime
 import sys
+from pathlib import Path
+from django.views.decorators.csrf import csrf_exempt
 
-sys.path.append("/Users/beom/Desktop/git/knps_phenology/src/phenoKOR")
-sys.path.append("C:\\github\\bigleader\\knps_phenology\\src\\phenoKOR")
+
+# 다른 패키지에 있는 모듈 가져오기
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if sys.path.count(f"{BASE_DIR}/phenoKOR") == 0: sys.path.append(f"{BASE_DIR}/phenoKOR")
+if sys.path.count(f"{BASE_DIR}\\phenoKOR") == 0: sys.path.append(f"{BASE_DIR}\\phenoKOR")
 import cv2 as cv
 import numpy as np
-import data_preprocessing as dp
 import matplotlib.pyplot as plt
+import phenoKOR as pk
+import data_preprocessing as dp
 
 # 전역변수
 root, middle = dp.get_info()
@@ -61,8 +70,7 @@ def index(request):
 
 # 분석 페이지
 def analysis(request):
-    property_list = ["knps", "curve_fit", "start_year", "end_year", "class_num", "threshold",
-                     "shape"]  # GET 메소드로 주고 받을 변수 이름들
+    property_list = ["knps", "curve_fit", "start_year", "end_year", "class_num", "threshold", "shape"]  # GET 메소드로 주고 받을 변수 이름들
     db = {}  # 데이터를 저장하고 페이지에 넘겨 줄 딕셔너리
 
     if request.method == 'GET':  # GET 메소드로 값이 넘어 왔다면,
@@ -94,44 +102,79 @@ def predict(request):
 
 
 # 페노캠 이미지 분석하는 페이지
+@csrf_exempt
 def phenocam(request):
     db = {}
 
-    if request.method == 'POST' and request.FILES['folder']:
-        image = dict(request.FILES)['folder']  # 폴더 내에 있는 모든 파일 가져오기
-        images = image[0]
+    if request.method == 'POST':
+        if request.FILES: # input[type=file]로 값이 넘어 왔다면,
+            columns = ['date', 'code', 'year', 'month', 'day', 'rcc', 'gcc'] # 파일 정보 저장에 사용할 key: value
+            for key in columns:
+                db[f"{key}"] = []
+            info = dict(request.FILES) # 파일 정보 담긴 딕셔너리
+            imgs, img_mask = [], None # init
 
-        print("===== images name =====")
-        # print('myfile read:', images.read())  # file 읽기
-        print('myfile size:', images.size)  # file 읽기
-        print('myfile content_type:', images.content_type)
-        print('myfile open:', images.open())
-        myfile_read = images.read()
-        print('myfile read type:', type(myfile_read))
+            # 이미지 가져오기
+            if info['imgs']:
+                imgs_byte = info['imgs']  # 폴더 내에 있는 모든 파일 가져오기
 
-        data_io = io.BytesIO(myfile_read)
-        img_pil = Image.open(data_io)
-        print(img_pil)
-        numpy_image = np.array(img_pil)
-        open_cv_image = cv.cvtColor(numpy_image, cv.COLOR_RGB2BGR)
-        print(open_cv_image.shape)
+                # 파일 이름에서 정보 추출하기
+                for img_byte in imgs_byte:
+                    filename = img_byte.name # 파일 이름 가져오기
+                    fn_split_list = filename.split("_") # 파일 이름 _ 으로 분리
+                    print(filename)
+                    for i in range(4):
+                        db[columns[i+1]].append(fn_split_list[i]) # code, year, month, day 순으로 삽입
+                    # datetime 넣기
+                    db["date"].append(pd.to_datetime(f"{fn_split_list[1]}-{fn_split_list[2]}-{fn_split_list[3]}", format="%Y-%m-%d"))
 
-        print("=====")
-        print(len(image))
+                    imgs.append(dp.byte2img(img_byte.read())) # 바이트 파일을 이미지로 변환해 리스트에 저장
 
-        # encoding_img = np.fromstring(str(myfile_read), dtype=np.uint8)
-        # print(encoding_img)
-        # print(len(encoding_img))
-        # print(type(encoding_img))
-        # img = cv.imdecode(encoding_img, cv.IMREAD_COLOR)
-        # print(img)
+                # db['path'] = imgs_byte[0].temporary_file_path()  # 첫 이미지의 절대 경로 가져오기
+                imgs = np.array(imgs) # arr2ndarray
+
+                # 마스크 이미지 가져오기
+                if info['img_mask']:
+                    img_mask = dp.byte2img(info['img_mask'][0].read())
+                    img_mask = cv.resize(img_mask, (imgs[0].shape[1], imgs[0].shape[0])) # 캔버스 그릴 때 축소해서 원본 크기로 맞춤
+                    new_mask = np.where(img_mask == 255, img_mask, 0) # 직접 그린 관심 영역 제외하고 검정색(0)으로 만들기
+
+            # print image shape
+            print("===== img shape =====")
+            print("imgs shape: ", imgs.shape)
+            print("img_mask shape: ", img_mask.shape)
+            print("new_mask shape: ", new_mask.shape)
+
+            # 관심 영역 이미지 구하기
+            imgs_roi = []
+            for img in imgs:
+                img_roi = dp.load_roi(img, img_mask)
+                imgs_roi.append(img_roi)
+            imgs_roi = np.array(imgs_roi)
+            print("imgs_roi shape: ", imgs_roi.shape)
+
+            # 관심 영역 이미지에 대한 rcc, gcc 값 구하기
+            rcc_list, gcc_list = [], []
+            for img_roi in imgs_roi:
+                rcc, gcc = pk.get_cc(img_roi)
+
+                rcc_list.append(rcc)
+                gcc_list.append(gcc)
+
+            # dataframe 만들기
+            df = pd.DataFrame(columns=columns)
+            for key in columns:
+                df[f"{key}"] = db[f"{key}"]
+            df['rcc'] = rcc_list
+            df['gcc'] = gcc_list
+            print(df)
 
     return render(request, 'map/phenocam.html', db)
 
 
 # 연속된 그래프를 그려주는 메소드
 def get_chart(ori_db):
-    df = pd.read_csv(root + f"data{middle}knps_final.csv")  # 데이터 가져오기
+    df = pd.read_csv(root + f"{middle}data{middle}knps_final.csv")  # 데이터 가져오기
     df = df[df['class'] == int(ori_db['class_num'])]
     df = df[df['code'] == ori_db['knps']]
 
@@ -165,7 +208,8 @@ def get_chart(ori_db):
 
     # 그래프 속성 설정하기
     timeSeries.AddAttribute('caption', '{"text":"식생지수 분석"}')
-    timeSeries.AddAttribute('chart', f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}의 {ori_db["class_num"]} 식생지수"}}')
+    timeSeries.AddAttribute('chart',
+                            f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}의 {ori_db["class_num"]} 식생지수"}}')
     timeSeries.AddAttribute('subcaption', '{"text":"국립공원공단 레인저스"}')
     timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
 
@@ -178,7 +222,7 @@ def get_chart(ori_db):
 
 # 연도별 그래프를 그려주는 메소드
 def get_multi_plot(ori_db):
-    df = pd.read_csv(root + f"data{middle}knps_final.csv")
+    df = pd.read_csv(root + f"{middle}data{middle}knps_final.csv")
     df = df[df['class'] == int(ori_db['class_num'])]
     df = df[df['code'] == ori_db['knps']]
     print(df)
@@ -188,7 +232,7 @@ def get_multi_plot(ori_db):
     db = {
         "chart": {  # 그래프 속성
             "exportEnabled": "1",
-            "exportfilename" : f"{ori_db['knps']}의 {ori_db['class_num']} 식생지수",
+            "exportfilename": f"{ori_db['knps']}의 {ori_db['class_num']} 식생지수",
             "bgColor": "#262A33",
             "bgAlpha": "100",
             "showBorder": "0",
@@ -224,9 +268,9 @@ def get_multi_plot(ori_db):
 
 
 def export_doy(ori_db):
-    df = pd.read_csv(root + f"data{middle}knps_final.csv")
-    df_sos = pd.read_csv(root + f"data{middle}knps_sos.csv")
-    df_sos = df_sos[['year',ori_db['knps']+'_'+ori_db['class_num']]]
+    df = pd.read_csv(root + f"{middle}data{middle}knps_final.csv")
+    df_sos = pd.read_csv(root + f"{middle}data{middle}knps_sos.csv")
+    df_sos = df_sos[['year', ori_db['knps'] + '_' + ori_db['class_num']]]
     df_sos.columns = ['year', 'sos']
 
     phenophase_date = ''
@@ -260,8 +304,8 @@ def export_doy(ori_db):
                 low_value += div_add
 
         phenophase_doy = format(pd.to_datetime(low) + datetime.timedelta(days=a - 1), '%Y-%m-%d')
-        phenophase_date= format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j')+'일,'+phenophase_doy
-        phenophase_betw= (f'{low} ~ {high}')
+        phenophase_date = format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j') + '일,' + phenophase_doy
+        phenophase_betw = (f'{low} ~ {high}')
         doy.append(phenophase_date)
         betwn.append(phenophase_betw)
 
@@ -270,11 +314,6 @@ def export_doy(ori_db):
     for i in range(len(doy)):
         total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
 
-
-
-
-    html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id ='mytable')
-
-
+    html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id='mytable')
 
     return html_DataFrame

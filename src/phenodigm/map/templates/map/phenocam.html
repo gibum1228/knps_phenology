@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{%static 'map/phenocam_css.css'%}">
     <title>국립공원공단 페노다임</title>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script>
+    <script type="text/javascript">
         $(document).ready(function () {
             $("select[name=knps]").val("{{ knps }}");
             $("select[name=class_num]").val("{{ class_num }}");
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
     <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
-<body>
+<body onload="init()">
     <div class="parentLayer">
         <div class="leftLayer">
             <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image"
@@ -53,32 +53,111 @@
         </div>
         <div class="middleLayer">
             <div class="graphLayer">
+                <canvas id="canvas_mask"></canvas>
+                <script>
+                    // 초기화
+                    function init() {
+                        let position = [] // 현재 좌표들 저장
+                        let canvas = document.getElementById("canvas_mask");
+                        let context = canvas.getContext("2d");
+
+                        // 클릭 이벤트 리스너 설정
+                        canvas.addEventListener("click", function (event) {
+                            var rect = canvas.getBoundingClientRect(); // canvas 바운더리 가져오기
+                            var x = event.clientX - rect.left;
+                            var y = event.clientY - rect.top;
+                            position.push([x, y]) // canvas 기준 좌표 (x, y) 저장
+
+                            context.beginPath() // path 열기
+                            context.arc(x, y, 3, 0, 2 * 3.14) // 원 그리기: (x, y, 반지름, 시작각도, 끝각도)
+                            context.fillStyle = '#fff' // 칠할 색깔
+                            context.fill() // 칠하기
+                            context.closePath() // path 닫기
+                        });
+
+                        // 키보드 눌림 이벤트 리스너
+                        window.addEventListener("keydown", function (event) {
+                            if (event.keyCode == 83) { // 's' 눌리면
+                                context.beginPath() // path 열기
+                                context.moveTo(position[0][0], position[0][1]) // 도형 그릴 시작점 정하기
+                                // 다른 점들을 선으로 연결
+                                for(var i = 1; i < position.length; i++){
+                                    context.lineTo(position[i][0], position[i][1])
+                                }
+                                context.fillStyle = '#fff' // 칠할 색깔
+                                context.fill() // 칠하기
+                                context.closePath() // path 닫기
+                            }
+                        });
+                        // 키보드 손 뗌 이벤트 리스너
+                        window.addEventListener("keyup", function (event) {
+                            if (event.keyCode == 83) { // 's' 떼이면
+                                position = [] // 좌표 정보 초기화
+                            }
+                        });
+                    }
+                </script>
+            </div>
+            <div class="ROILayer">
                 그래프 영역
                 <div id="chart-1">
                     {{ graph | safe }}
                 </div>
             </div>
-
-            <div class="ROILayer">
-                """ 이미지 불러와 ROI 지정하는 구역"""
-
-            </div>
             <div class="ROISetting">
-                <button>ROI 지정/더블클릭시 지정완료</button>
-                <button>ROI 파일 경로지정 버튼</button>
-                <br>
-                <br>
-                <br>
-                <br>
-                <button>이미지 파일 경로 지정 버튼</button>
+                <button><a id="download_btn" href="" download="img_mask.png">다운로드</a></button>
+                <script>
+                    var canvas = document.getElementById('canvas_mask')
+
+                    document.getElementById('download_btn').addEventListener('click', event =>
+                        event.target.href = canvas.toDataURL()
+                    );
+                </script>
+                <input type="file" id="img_mask" name="img_mask" accept="image/*" form="send_img">ROI 파일 불러오기</input>
                 <div class="img_list">
                     불러온 이미지 목록 영역
                 </div>
-                <form method="post" enctype="multipart/form-data">
+                <form id="send_img" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input type="file" id="folder" name="folder" accept="image/*"
+                    <input type="file" id="imgs" name="imgs" accept="image/*"
                            webkitdirectory mozdirectory msdirectory odirectory directory multiple/>
                     <button type="submit">Upload</button>
+                    <script>
+                        // 이미지 불러오기
+                        function readImage(file) {
+                            // 이미지 파일 여부 확인하기
+                            if (file.type && !file.type.startsWith('image/')) {
+                                console.log('File is not an image.', file.type, file);
+                                return;
+                            }
+
+                            const reader = new FileReader(); // 파일 렌더링 객체
+
+                            // load 됐을 때 실행할 이벤트 리스너
+                            reader.addEventListener('load', (event) => {
+                                const canvas = document.getElementById('canvas_mask');
+                                const ctx = canvas.getContext('2d');
+                                const img = new Image(); // 이미지 파일 설정
+                                img.src = event.target.result;
+
+                                img.onload = function() {
+                                    canvas.width = img.width * 0.15;
+                                    canvas.height = img.height * 0.1;
+                                    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height); // 캔버스에 이미지 그리기
+                                }
+                            });
+
+                            reader.readAsDataURL(file); // file을 DataURL로 읽기
+                        }
+
+                        const fileSelector = document.getElementById('imgs');
+                        fileSelector.addEventListener('change', (event) => {
+                            const fileList = event.target.files;
+                            console.log(fileList);
+                            console.log(fileList[0]);
+                            readImage(fileList[0])
+                        });
+                    </script>
                 </form>
             </div>
             <div class="settingLayer">

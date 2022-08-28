@@ -8,12 +8,13 @@ import json
 # Chromatic Coordinate 값 연산
 def get_cc(img):
     # b, g, r 순서로 채널별 값 구하기
-    red_dn = img[:, :, 2]
-    blue_dn = img[:, :, 0]
-    green_dn = img[:, :, 1]
+    red_dn = np.sum(img[:, :, 2])
+    blue_dn = np.sum(img[:, :, 0])
+    green_dn = np.sum(img[:, :, 1])
 
     # 분모에 해당하는 레드 + 블루 + 그린 색상값 더하기
     bunmo = red_dn + blue_dn + green_dn
+    if bunmo == 0: return 0, 0
 
     # 각각의 Chromatic Coordinate 값 구하기
     red_cc = red_dn / bunmo
