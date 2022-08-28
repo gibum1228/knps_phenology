@@ -164,14 +164,15 @@ def phenocam(request):
 
                 rcc_list.append(rcc)
                 gcc_list.append(gcc)
+            db['rcc'] = rcc_list
+            db['gcc'] = gcc_list
 
             # dataframe 만들기
             df = pd.DataFrame(columns=columns)
             for key in columns:
-                df[f"{key}"] = db[f"{key}"]
-            df['rcc'] = rcc_list
-            df['gcc'] = gcc_list
+                df[f'{key}'] = db[f"{key}"]
             print(df)
+            df.to_csv(f"{root}{middle}data{middle}pheno_test.csv", index=False)
 
     return render(request, 'map/phenocam.html', db)
 
