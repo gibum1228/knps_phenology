@@ -23,11 +23,11 @@ def load_final_data(knps, class_num, all: bool=False):
     df = pd.read_csv(f"{root}{middle}data{middle}knps_final.csv")  # 데이터 가져오기
 
     # 전체 데이터를 추출할지 여부 판단
-    if not all:
+    if all:
+        return df # 전체 데이터 반환
+    else:
         # 조건에 맞는 데이터만 반환
         return df[(df["code"] == knps) & (df["class"] == class_num)].sort_values('date')
-    else:
-        return df # 전체 데이터 반환
 
 
 # 마스크 정보가 담긴 mat 파일 가져오기

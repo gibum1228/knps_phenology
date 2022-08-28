@@ -3,6 +3,8 @@ import cv2 as cv
 import imutils
 import numpy as np
 import json
+import analysis
+import prophet
 
 
 # Chromatic Coordinate 값 연산
@@ -24,8 +26,22 @@ def get_cc(img):
 
 
 # 다양한 curve fitting 알고리즘을 key으로 선택 가능
-def curve_fit(y, key):
-    pass
+def curve_fit(y, ori_db):
+    start_year = int(ori_db['start_year'])
+    end_year = int(ori_db['end_year'])
+    if ori_db['curve_fit'] == '1':
+        data_final, sos_df = analysis.Rangers_DL(y, start_year, end_year, ori_db)
+
+
+    elif ori_db['curve_fit'] == '2':
+        data_final, sos_df = analysis.Rangers_SG(y, start_year, end_year, ori_db)
+
+
+    elif ori_db['curve_fit'] == '3':
+        data_final, sos_df = analysis.Rangers_GSN(y, start_year, end_year, ori_db)
+
+    return data_final, sos_df
+
 
 
 # plot 그리기
