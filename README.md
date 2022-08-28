@@ -24,7 +24,7 @@ python >= 3.6
 cd src/phenodigm
 python manage.py runserver
 ```
-- go http://localhost:8000
+- go localhost:port
 
 # 페노다임 설명
 

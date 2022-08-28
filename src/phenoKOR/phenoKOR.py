@@ -10,12 +10,13 @@ import prophet
 # Chromatic Coordinate 값 연산
 def get_cc(img):
     # b, g, r 순서로 채널별 값 구하기
-    red_dn = img[:, :, 2]
-    blue_dn = img[:, :, 0]
-    green_dn = img[:, :, 1]
+    red_dn = np.sum(img[:, :, 2])
+    blue_dn = np.sum(img[:, :, 0])
+    green_dn = np.sum(img[:, :, 1])
 
     # 분모에 해당하는 레드 + 블루 + 그린 색상값 더하기
     bunmo = red_dn + blue_dn + green_dn
+    if bunmo == 0: return 0, 0
 
     # 각각의 Chromatic Coordinate 값 구하기
     red_cc = red_dn / bunmo
@@ -51,7 +52,8 @@ def show_plot(y, x = []):
 
 
 # ROI 마스크 PNG 파일 추출
-def draw_mask():
+def draw_mask(img):
+    print("in draw_mask")
     pts = []  # 마우스로 클릭한 포인트 저장
     mask_list = []  # 마스크 리스트 저장
 
@@ -110,12 +112,13 @@ def draw_mask():
 
         cv.imshow('image', img2)  # 이미지 화면 출력
 
-    img = cv.imread("C:/Users/kub84/Desktop/jir031_2021_06_01_132807.JPG")  # 저장된 이미지 읽어 오기
     img = cv.resize(img, (600, 400))
+    cv.startWindowThread()
     cv.namedWindow('image')  # 새로운 윈도우 창 이름 설정
     cv.setMouseCallback('image', draw_mask_eventListener)  # 마우스 이벤트가 발생했을 때 전달할 함수
 
     while True:
+        print("-ing...")
         key = cv.waitKey(1) & 0xFF  # SOH
         if key == 27:  # ESC
             break
