@@ -36,7 +36,7 @@ import data_preprocessing as dp
 
 # 전역변수
 root, middle = dp.get_info()
-
+knps_final = dp.load_final_data("", "", True)
 
 
 # 홈 페이지
@@ -126,7 +126,6 @@ def phenocam(request):
                 for img_byte in imgs_byte:
                     filename = img_byte.name  # 파일 이름 가져오기
                     fn_split_list = filename.split("_")  # 파일 이름 _ 으로 분리
-                    print(filename)
                     for i in range(4):
                         db[columns[i + 1]].append(fn_split_list[i])  # code, year, month, day 순으로 삽입
                     # datetime 넣기
@@ -144,19 +143,12 @@ def phenocam(request):
                     img_mask = cv.resize(img_mask, (imgs[0].shape[1], imgs[0].shape[0]))  # 캔버스 그릴 때 축소해서 원본 크기로 맞춤
                     new_mask = np.where(img_mask == 255, img_mask, 0)  # 직접 그린 관심 영역 제외하고 검정색(0)으로 만들기
 
-            # print image shape
-            print("===== img shape =====")
-            print("imgs shape: ", imgs.shape)
-            print("img_mask shape: ", img_mask.shape)
-            print("new_mask shape: ", new_mask.shape)
-
             # 관심 영역 이미지 구하기
             imgs_roi = []
             for img in imgs:
-                img_roi = dp.load_roi(img, img_mask)
+                img_roi = dp.load_roi(img, new_mask)
                 imgs_roi.append(img_roi)
             imgs_roi = np.array(imgs_roi)
-            print("imgs_roi shape: ", imgs_roi.shape)
 
             # 관심 영역 이미지에 대한 rcc, gcc 값 구하기
             rcc_list, gcc_list = [], []
@@ -165,25 +157,86 @@ def phenocam(request):
 
                 rcc_list.append(rcc)
                 gcc_list.append(gcc)
+            db['rcc'] = rcc_list
+            db['gcc'] = gcc_list
 
             # dataframe 만들기
             df = pd.DataFrame(columns=columns)
             for key in columns:
-                df[f"{key}"] = db[f"{key}"]
-            df['rcc'] = rcc_list
-            df['gcc'] = gcc_list
-            print(df)
+                df[f'{key}'] = db[f"{key}"]
+
+            try:
+                ori_df = pd.DataFrame(f"{root}{middle}data{middle}pheno_test.csv")
+            except:
+                ori_df = pd.DataFrame(columns=columns)
+
+            save_df = pd.concat([ori_df, df])
+            save_df.to_csv(f"{root}{middle}data{middle}pheno_test.csv", index=False)
+
+            db['graph'] = get_chart_for_phenocam(df)
 
     return render(request, 'map/phenocam.html', db)
 
 
 # 연속된 그래프를 그려주는 메소드
+def get_chart_for_phenocam(ori_db):
+    # df = dp.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
+    # df, df_sos = pk.curve_fit(df, ori_db)
+
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final_analysis.csv")
+    df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+            (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values('date')
+
+    data = []  # 그래프를 그리기 위한 데이터
+    schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}]  # 하나의 data 구조
+    info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]  # 월별 일 수 정보
+    year, month, day = int(ori_db['start_year']), 1, 1  # 년월일을 알기 위한 변수
+
+    for _ in range(len(df)):  # data에 값 채우기
+        data.append([f"{year}-{month}-{day}", df.iloc[len(data)]['avg']])  # schema 형태에 맞게 데이터 추가
+
+        day += 8  # 8일 간격씩 데이터 추가
+        if month == 2:  # 2월은 윤년 여부 판단하기
+            day_limit = dp.get_Feb_day(year)
+        else:  # 2월이 아니면 해당 월의 일 수 가져오기
+            day_limit = info_day[month]
+
+        # 다음 월로 넘어가야 한다면,
+        if day > day_limit:
+            day -= day_limit  # 새로운 일
+            month += 1  # 다음 월로 가기
+
+            if month > 12:  # 다음 연도로 넘어가야 한다면,
+                year += 1
+                # 무조건 1월 1일부터 시작하기 때문에 month와 day를 1로 초기화
+                month = 1
+                day = 1
+
+    fusionTable = FusionTable(json.dumps(schema), json.dumps(data))  # 데이터 테이블 만들기
+    timeSeries = TimeSeries(fusionTable)  # 타임시리즈 만들기
+
+    # 그래프 속성 설정하기
+    timeSeries.AddAttribute('caption', f'{{"text":"EVI of {ori_db["knps"]}"}}')
+    timeSeries.AddAttribute('chart',
+                            f'{{"theme":"candy", "exportEnabled": "1", "exportfilename": "{ori_db["knps"]}_{ori_db["class_num"]}_{ori_db["start_year"]}_{ori_db["end_year"]}"}}')
+    timeSeries.AddAttribute('subcaption', f'{{"text":"class_num : {ori_db["class_num"]}"}}')
+    timeSeries.AddAttribute('yaxis', '[{"plot":{"value":"EVI"},"format":{"prefix":""},"title":"EVI"}]')
+
+    # 그래프 그리기
+    fcChart = FusionCharts("timeseries", "ex1", 960, 400, "chart-1", "json", timeSeries)
+
+    # 그래프 정보 넘기기
+    return fcChart.render()
+
+
+# 연속된 그래프를 그려주는 메소드
 def get_chart(ori_db):
-    df = dp.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
+    # df = dp.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
+    # df, df_sos = pk.curve_fit(df, ori_db)
 
-
-
-    df, df_sos = pk.curve_fit(df, ori_db)
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final_analysis.csv")
+    df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+            (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values('date')
 
     data = []  # 그래프를 그리기 위한 데이터
     schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}]  # 하나의 data 구조
@@ -229,11 +282,16 @@ def get_chart(ori_db):
 
 # 연도별 그래프를 그려주는 메소드
 def get_multi_plot(ori_db):
-    df = pd.read_csv(root + f"{middle}data{middle}knps_final.csv")
-    df = df[df['class'] == int(ori_db['class_num'])]
-    df = df[df['code'] == ori_db['knps']]
+    # df = pd.read_csv(root + f"{middle}data{middle}knps_final.csv")
+    # df = df[df['class'] == int(ori_db['class_num'])]
+    # df = df[df['code'] == ori_db['knps']]
+    #
+    # df, df_sos = pk.curve_fit(df, ori_db)
 
-    df, df_sos = pk.curve_fit(df, ori_db)
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final_analysis.csv")
+    df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+            (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        'date')
 
     # curve fitting된 데이터 가져오기
 
@@ -290,11 +348,13 @@ def export_doy(ori_db):
 
     # sos 기준으로 개엽일 추출
     if ori_db['curve_fit'] == '1':
-        df, df_sos = pk.curve_fit(df, ori_db)
-        df_sos.columns = ['year', 'sos']
+        # df, df_sos = pk.curve_fit(df, ori_db)
+        # df_sos.columns = ['year', 'sos']
+        df_sos = pd.read_csv(f"{root}{middle}data{middle}knps_sos.csv")
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-            phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2003]
             phenophase_date = (f'{year}년 : {phenophase_doy}일')
             sos.append(phenophase_date)
 
@@ -379,11 +439,16 @@ def open_model_processing(ori_db):
 def get_predict_chart(ori_db):
     df = open_model_processing(ori_db)
 
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final_predict.csv")
+    df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+            (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        'date')
+
     data = []  # 그래프를 그리기 위한 데이터
     schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "EVI", "type": "number"}]
-
+    print(df)
     for i in range(len(df)):  # data에 값 채우기
-        data.append([df.loc[i, 'date'], df.loc[i, 'avg']])
+        data.append([df['date'].iloc[i], df['avg'].iloc[i]])
 
     fusionTable = FusionTable(json.dumps(schema), json.dumps(data))  # 데이터 테이블 만들기
     timeSeries = TimeSeries(fusionTable)  # 타임시리즈 만들기
@@ -404,7 +469,12 @@ def get_predict_chart(ori_db):
 
 def get_predict_multi_plot(ori_db):
     # curve fitting된 데이터 가져오기
-    df = open_model_processing(ori_db)
+    # df = open_model_processing(ori_db)
+
+    df = pd.read_csv(f"{root}{middle}data{middle}knps_final_predict.csv")
+    df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+            (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        'date')
 
     # 그래프 속성 및 데이터를 저장하는 변수
     db = {
@@ -479,11 +549,13 @@ def predict_export_doy(ori_db):
 
     # sos 기준으로 개엽일 추출
     if ori_db['curve_fit'] == '1':
-        df, df_sos = pk.curve_fit(df, ori_db)
-        df_sos.columns = ['year', 'sos']
+        # df, df_sos = pk.curve_fit(df, ori_db)
+        # df_sos.columns = ['year', 'sos']
+        df_sos = pd.read_csv(f"{root}{middle}data{middle}knps_final_predict_sos.csv")
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-            phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2022]
             phenophase_date = (f'{year}년 : {phenophase_doy}일')
             sos.append(phenophase_date)
 
