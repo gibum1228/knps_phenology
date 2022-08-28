@@ -38,6 +38,7 @@ import data_preprocessing as dp
 root, middle = dp.get_info()
 
 
+
 # 홈 페이지
 @xframe_options_exempt  # iframe 허용하기 위한 태그
 def index(request):
@@ -180,6 +181,8 @@ def phenocam(request):
 # 연속된 그래프를 그려주는 메소드
 def get_chart(ori_db):
     df = dp.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
+
+
 
     df, df_sos = pk.curve_fit(df, ori_db)
 
@@ -338,7 +341,7 @@ def export_doy(ori_db):
 
 
 def open_model_processing(ori_db):
-    with open(root + f"data{middle}model{middle}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
+    with open(root + f"{middle}data{middle}model{middle}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
 
     periods = 4
@@ -444,7 +447,7 @@ def get_predict_multi_plot(ori_db):
 
 
 def predict_export_doy(ori_db):
-    with open(root + f"data{middle}model{middle}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
+    with open(root + f"{middle}data{middle}model{middle}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
 
     periods = 0
