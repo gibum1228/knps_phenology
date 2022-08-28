@@ -13,8 +13,6 @@
         $(document).ready(function () {
             $("select[name=knps]").val("{{ knps }}");
             $("select[name=class_num]").val("{{ class_num }}");
-            $("select[name=start_year]").val("{{ start_year }}");
-            $("select[name=end_year]").val("{{ end_year }}");
             $("select[name=curve_fit]").val("{{ curve_fit }}");
             $("input[name=threshold]").val("{{ threshold }}");
             $("#shape" + "{{ shape }}").prop("checked", true);
@@ -165,22 +163,6 @@
                 </table>
                 <b class="settingTitle">설정</b>
                 <form method="get" action="/phenocam/" id="optionForm">
-                    <b class="startTitle">기간</b>
-                    <select class="start_year" name="start_year">
-                        <option value="2017">2017</option>
-                        <option value="2018">2018</option>
-                        <option value="2019">2019</option>
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                    </select>
-                    <b class="endTitle">~</b>
-                    <select class="end_year" name="end_year">
-                        <option value="2017">2017</option>
-                        <option value="2018">2018</option>
-                        <option value="2019">2019</option>
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                    </select>
                     <br><b class="curve_fittingTitle">curve_fitting</b>
                     <select class="curve_fit" name="curve_fit">
                         <option value="1" selected>다중 로지스틱 함수</option>

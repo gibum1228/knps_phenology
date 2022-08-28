@@ -21,13 +21,14 @@ def get_info():
 # 최종 통합 데이터 파일에서 원하는 국립공원 산림 데이터 로드하기
 def load_final_data(knps, class_num, all: bool=False):
     df = pd.read_csv(f"{root}{middle}data{middle}knps_final.csv")  # 데이터 가져오기
+    print(root)
 
     # 전체 데이터를 추출할지 여부 판단
     if all:
         return df # 전체 데이터 반환
     else:
         # 조건에 맞는 데이터만 반환
-        return df[(df["code"] == knps) & (df["class"] == class_num)].sort_values('date')
+        return df[(df["code"] == knps) & (df["class"] == int(class_num))].sort_values('date')
 
 
 # 마스크 정보가 담긴 mat 파일 가져오기
