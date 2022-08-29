@@ -9,7 +9,9 @@ import cv2
 import warnings
 warnings.filterwarnings('ignore')
 
-# Double Logistic 함수 정의
+# Curve Fitting Method
+
+# Double Logistic Function
 def Rangers_DL(input_data, start_year, end_year):
     '''
     :param Data : input DataFrame
@@ -31,7 +33,6 @@ def Rangers_DL(input_data, start_year, end_year):
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
     data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 시작 연도 기준 DOY 누적 게산
-    data_final.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
 
     # Normalize 함수
     def Normalize(x, sf):
@@ -169,7 +170,11 @@ def Rangers_DL(input_data, start_year, end_year):
         data_final = pd.concat([data_final, data_re])  # 반환할 Double Logistic 데이터 프레임에 추가
         sos_list.append(np.floor(opt_param[2]))  # 반환할 SOS 데이터 프레임에 추가
 
-    sos_df = pd.Series(sos_list, index=range(start_year, end_year+1))
+    sos_df = pd.DataFrame()
+    sos_df['Year'] = [i for i in range(start_year, end_year + 1)]
+    sos_df['sos_DOY'] = sos_list
+
+    data_final.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
 
     return data_final, sos_df
 
@@ -232,3 +237,182 @@ def Rangers_GSN(data_input, start_year, end_year):
     data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
 
     return data
+
+
+# PPT 시각화
+
+# 고정 카메라 결측치 확인
+def pheno_test_plot():
+
+    pheno_test = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/pheno_test.csv')
+    pheno_test = pheno_test.groupby('day').mean()  # 일별 평균 데이터 추출
+
+    # 지리산 2020년 1월 데이터 확인 Plot
+    plt.figure(figsize=(15,5))
+    plt.scatter(pheno_test.index, pheno_test.rcc, color='red')
+    plt.xticks(range(32), range(32))
+    plt.ylim(0.2, 0.4)
+    plt.gca().axes.yaxis.set_visible(False)  # y축 값 제거
+    plt.show()
+
+def see_sos():
+
+    # 개엽일
+    SOS_split = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/SOS_final.csv')
+    SOS_split.drop('Unnamed: 0', axis=1, inplace=True)
+    SOS_split.index = range(2003, 2022)
+    SOS_split = SOS_split.iloc[:,SOS_split.columns.str.contains('2')]
+    SOS_split.columns = SOS_split.columns.str[:-2]
+
+    sos_test = SOS_split.loc[:, 'bukhan']
+
+    # 4년 씩 묶어서 계산
+    test_4 = []
+    for i in range(4):
+        test_4.append(np.mean(sos_test[(sos_test.index >= 2003+4*i) & (sos_test.index < 2007+4*i)]))
+    for i in range(2019, 2022):
+        test_4.append(sos_test[sos_test.index == i].iloc[0])
+
+    test_4_df = pd.DataFrame(test_4)
+    print(test_4_df)
+
+    # 분석 개엽일 추세 Plot
+    plt.figure(figsize=(20,5))
+    plt.rcParams['font.size'] = 12
+    plt.plot(test_4, color='red', marker='o', markersize=8)
+    plt.xticks([0,1,2,3,4,5,6], labels=['2003~2006','2007~2010','2011~2014','2015~2018','2019','2020','2021'])
+    plt.ylim(90, 120)
+    plt.axis('off')
+    plt.show()
+
+
+# # 회귀 직선 - 개엽일 추세 예측
+# X = np.array([0,1,2,3,4,5,6]).reshape(-1,1)
+# y = np.array([106.5, 107.5, 110.25, 104.0, 108.0, 107.0, 98.0]).reshape(-1,1)
+# m = LinearRegression()
+# m.fit(X, y)
+# print('2033 SOS prediction :', m.predict([[18]]))  # 2033년의 개엽일은 3월 31일
+
+# 개엽일과 봄철 기온 상관관계 함수
+def corr_sos_temp():
+    '''
+    Example : 북한산의 개엽일과 봄철 기온의 상관관계 (2003년 ~ 2021년)
+    북한산 기온 데이터 (기상청 기상자료개방포털 활용)
+    '''
+    data = pd.read_csv(f'C:/Users/cdbre/Desktop/Project/data/weather/bukhan_tem.csv', encoding='CP949')
+    data.columns = ['num', 'site', 'date', 'temp', 'precip']
+    data = data.iloc[:, 2:]
+
+    data['Year'] = data['date'].apply(lambda x: format(datetime.strptime(x, '%b-%y'), '%Y'))
+    data['Month'] = data['date'].apply(lambda x: format(datetime.strptime(x, '%b-%y'), '%m'))
+
+    data_spring = data[(data['Month'] == '03') | (data['Month'] == '04')]  # 봄철인 3월과 4월만 고려
+    data_spring = data_spring.groupby(['Year']).mean()  # 각 연도별 봄철 평균 기온
+
+    SOS_df = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/SOS_final.csv')
+    SOS_df.drop('Unnamed: 0', axis=1, inplace=True)
+    SOS_df = SOS_df.iloc[:, SOS_df.columns.str.contains('2')]  # 활엽수만 비교하기 위해 2 포함한 열만 추출
+    SOS_df.columns = SOS_df.columns.str[:-2]  # 칼럼명에서 마지막 _2 제거
+    SOS_df.index = range(2003, 2022)
+    data_sos = SOS_df.loc[:, ['bukhan']]  # 개엽일 데이터 프레임에서 '북한산' 국립 공원 선택
+    data_sos = data_sos.astype('int')  # 개엽일 정수형으로 변환
+
+    # 봄철 기온의 변화와 개엽일 변화 추이
+    plt.style.use('default')
+    plt.rcParams['figure.figsize'] = (15, 5)
+    plt.rcParams['font.size'] = 10
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(data_sos.index, data_sos, color='green', lw=4)
+
+    ax2 = ax1.twinx()
+    ax2.plot(data_sos.index, data_spring.temp, color='red', lw=4)
+    plt.axis('off')
+    plt.show()
+
+
+# 식생지수의 최대값과 최소값 변화 추이 비교 함수
+def sos_minmax(park_input):
+
+    CV_df = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/DL_Final.csv')  # Double Logistic 적용된 데이터
+    ori_data = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/knps_final.csv')  # 원본 데이터
+
+    CV_df.columns = ['CUM_DOY', 'code', 'class', 'date', 'avg', 'DOY']
+
+    each_year_list = []
+    for each_date in CV_df['date']:
+        each_date = int(each_date[:4])
+        each_year_list.append(each_date)
+    CV_df.loc[:, 'Year'] = each_year_list  # Year 칼럼 추가
+
+    # 국립 공원과 산림 지역 선택
+    data = CV_df[(CV_df['code'] == park_input) & (CV_df['class'] == 2)]  # DL 적용 데이터에서 원하는 국립 공원의 활엽수림 선택
+
+    # 비교할 원본 데이터
+    OR_df = ori_data[(ori_data['code'] == park_input) & (ori_data['class'] == 2)]  # 원본 데이터에서 선택
+    OR_df.index = data['CUM_DOY']
+
+    each_year_list = []
+    for each_date in OR_df['date']:
+        each_date = int(each_date[:4])
+        each_year_list.append(each_date)
+    OR_df.loc[:, 'Year'] = each_year_list  # Year 칼럼 추가
+
+    # 원본 데이터에서 min, max 추출
+    OR_minmax = []
+    for i in range(2003, 2022):
+        year_max = np.max(OR_df[OR_df['Year'] == i].avg)  # 각 연도별 최대값 추가
+        year_min = np.min(OR_df[OR_df['Year'] == i].avg)  # 각 연도별 최소값 추가
+        OR_minmax.append([year_min, year_max])
+
+    OR_minmax = pd.DataFrame(OR_minmax, columns=['min', 'max'], index=range(2003, 2022))  # 각 연도별 min, max 데이터 프레임
+
+    # DL 데이터에서 min, max 추출
+    CV_minmax = []
+    for i in range(2003, 2022):
+        year_max = np.max(data[data['Year'] == i].avg)
+        year_min = np.min(data[data['Year'] == i].avg)
+        CV_minmax.append([year_min, year_max])
+
+    CV_minmax = pd.DataFrame(CV_minmax, columns=['min', 'max'], index=range(2003, 2022))
+
+    print('max \n', CV_minmax['max'])
+    print('min \n', CV_minmax['min'])
+
+    # min, max 값 서로 비교 Plot
+    plt.figure(figsize=(20,5))
+    plt.title(f'Comparing {park_input} Broadleaved MIN & Max EVI')
+    plt.plot(OR_minmax.index, OR_minmax['min'], color='black', label='Original Min', linestyle='dashed', lw=2)
+    plt.plot(OR_minmax.index, OR_minmax['max'], color='black', label='Original Max', linestyle='dashed', lw=2)
+    plt.plot(CV_minmax.index, CV_minmax['min'], color='red', label='Curve Fitting Min', lw=3)
+    plt.plot(CV_minmax.index, CV_minmax['max'], color='red', label='Curve Fitting Max', lw=3)
+    plt.xticks(range(2002,2023),range(2002,2023))
+    plt.ylim(0, 1)
+    plt.legend(loc='upper right')
+    plt.show()
+
+
+# 1년치 원본값 Plot 확인 (2021년 지리산 활엽수림)
+def org_bl():
+
+    hello = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/knps_final.csv')
+
+    hello = hello[(hello['code'] == 'jiri') & (hello['class'] == 2)]
+
+    each_year_list = []
+    for each_date in hello['date']:
+        each_date = int(each_date[:4])
+        each_year_list.append(each_date)
+    hello['Year'] = each_year_list
+
+    hello = hello[hello['Year'] == 2021]
+    hello['DOY'] = hello['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))
+
+    # 원본 데이터 Plot
+    plt.figure(figsize=(15, 5))
+    plt.plot(hello.DOY, hello.avg, color='blue', lw=4)
+    plt.axis('off')
+    plt.show()
+
+
+
