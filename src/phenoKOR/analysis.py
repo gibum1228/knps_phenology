@@ -9,10 +9,9 @@ import cv2
 import warnings
 warnings.filterwarnings('ignore')
 
-# Curve Fitting Method
 
-# Double Logistic Function
-def Rangers_DL(input_data, start_year, end_year):
+# Double Logistic 함수 정의
+def Rangers_DL(input_data, start_year, end_year, ori_db):
     '''
     :param Data : input DataFrame
     :param start_year, end_year
@@ -21,7 +20,11 @@ def Rangers_DL(input_data, start_year, end_year):
 
     data = input_data
 
-    data_final = pd.DataFrame(columns=['code', 'class', 'date', 'avg', 'DOY'])  # return 할 데이터 프레임
+
+    if ori_db['AorP'] == 'A' :
+        data_final = pd.DataFrame(columns=['code', 'class', 'date', 'avg', 'DOY'])
+    else:
+        data_final = pd.DataFrame(columns=['date', 'avg', 'DOY'])# return 할 데이터 프레임
     sos_list = []  # return 할 SOS 값
 
     each_year_list = []
@@ -32,7 +35,6 @@ def Rangers_DL(input_data, start_year, end_year):
     data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]  # 보고 싶은 연도 설정 반영
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
-    data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 시작 연도 기준 DOY 누적 게산
 
     # Normalize 함수
     def Normalize(x, sf):
@@ -65,7 +67,10 @@ def Rangers_DL(input_data, start_year, end_year):
 
         data_re = data[data['Year'] == each_year]
         data_re.index = data_re['DOY']
-        data_re = data_re.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
+        if ori_db['AorP'] == 'A':
+            data_re = data_re.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
+        else:
+            data_re = data_re.loc[:, ['date', 'avg', 'DOY']]
 
         # 고정 겨울 : 겨울 기간 내 최소 EVI 값이 0보다 작을 경우 0 사용, 0보다 클 경우 최소 EVI 값 사용
         if np.min(data_re['avg']) <= 0:
@@ -171,16 +176,14 @@ def Rangers_DL(input_data, start_year, end_year):
         sos_list.append(np.floor(opt_param[2]))  # 반환할 SOS 데이터 프레임에 추가
 
     sos_df = pd.DataFrame()
-    sos_df['Year'] = [i for i in range(start_year, end_year + 1)]
-    sos_df['sos_DOY'] = sos_list
-
-    data_final.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
+    sos_df['Year'] = [i for i in range(start_year, end_year+1)]
+    sos_df['sos_DOY'] = sos_list  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
 
     return data_final, sos_df
 
 
 # Savitzky-Golay Function
-def Rangers_SG(data_input, start_year, end_year):
+def Rangers_SG(data_input, start_year, end_year, ori_db):
     '''
     :param data_input : input DataFrame
     :param start_year, end_year
@@ -188,6 +191,7 @@ def Rangers_SG(data_input, start_year, end_year):
     '''
 
     data = data_input  # 입력받은 데이터 data에 저장
+    print(data)
 
     each_year_list = []
     for each_date in data['date']:
@@ -197,19 +201,23 @@ def Rangers_SG(data_input, start_year, end_year):
     data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]  # 보고 싶은 연도 설정 반영
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
-    data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 시작 연도 기준 DOY 누적 게산
-    data.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
+
 
     # Scipy 내부에 있는 savgol_filter 활용
+    print(data.avg.shape)
     data['avg'] = savgol_filter(data.avg, window_length=5, polyorder=1)
 
-    data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
 
-    return data
+    if ori_db['AorP'] == 'A':
+        data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
+    else : data = data.loc[:, ['date', 'avg', 'DOY']]
+
+    sos_df = [0]
+    return data, sos_df
 
 
 # Gaussian Function
-def Rangers_GSN(data_input, start_year, end_year):
+def Rangers_GSN(data_input, start_year, end_year, ori_db):
     '''
     :param data_input : input DataFrame
     :param start_year, end_year
@@ -226,18 +234,20 @@ def Rangers_GSN(data_input, start_year, end_year):
     data = data[(data['Year'] >= start_year) & (data['Year'] <= end_year)]  # 보고 싶은 연도 설정 반영
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
-    data['DOY_CUM'] = data['DOY'] + 365 * (data['Year'] - data['Year'].iloc[0])  # 시작 연도 기준 DOY 누적 게산
-    data.index = data['DOY_CUM']  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
+
 
     # Gaussian Filtering
     kernel1d = cv2.getGaussianKernel(46*(end_year - start_year + 1), 1)
     kernel2d = np.outer(kernel1d, kernel1d.transpose())
     data['avg'] = cv2.filter2D(np.array(data.avg), -1, kernel2d).reshape(-1).tolist() # convolve
 
-    data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
+    if ori_db['AorP'] == 'A':
+        data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
+    else:
+        data = data.loc[:, ['date', 'avg', 'DOY']]
 
-    return data
-
+    sos_df = [0]
+    return data, sos_df
 
 # PPT 시각화
 
@@ -413,6 +423,3 @@ def org_bl():
     plt.plot(hello.DOY, hello.avg, color='blue', lw=4)
     plt.axis('off')
     plt.show()
-
-
-

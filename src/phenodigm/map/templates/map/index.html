@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="{%static 'map/icon/파랑해녀반달.png'%}">
     <link rel="stylesheet" href="{%static 'map/total_css.css'%}">
     <title>국립공원공단 페노다임</title>
@@ -13,39 +13,38 @@
 <body>
     <div class="parentLayer">
          <div class="leftLayer">
-                <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
+                <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute;  top:35px; width:120px">
 
-                <div class="home_area" style="background-color:#f2f2eb; border-radius: 26px;">
-                    <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+                <div class="home_area" onclick="location.href='/';" style="background-color:white; border-radius: 15px;">
+                    <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                     <a class="home_btn" href="/" style="color:black">홈</a>
                 </div>
 
-                <div class="analysis_area">
-                    <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
-                    <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">분석</a>
+                <div class="analysis_area"  onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1';">
+                    <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
+                    <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.5&shape=1">분석</a>
                 </div>
 
-                <div class="predict_area">
-                    <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                    <a class="predict_btn" href="/predict/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">예측</a>
+                <div class="predict_area"  onclick="location.href='/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.5&shape=1';">
+                    <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
+                    <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.5&shape=1">예측</a>
                 </div>
 
-                <div class="phenocam_area">
-                    <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+                <div class="phenocam_area" onclick="location.href='/phenocam/';">
+                    <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                     <a class="phenocam_btn" href="/phenocam">카메라</a>
                 </div>
-            <p class="ver">
-                Phenodigm<br>
-                ver 1.0.0
-            </p>
+                <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
         </div>
         <div class="middleLayer">
-            <h1 class="page_title">빅리더 7시 국립공원공단 레인저스 - 페노다임</h1>
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
+            <h1 class="page_title">빅리더 7기 국립공원공단 레인저스 - 페노다임</h1>
             <div class="map">
                 {{map | safe}}
             </div>
+
+
         </div>
-        <img class="Bandal_img" src="{%static 'map/Bandal_icon.png'%}" alt="My Image" style="position:absolute; width:450px; left:1400px; top:450px " >
     </div>
 </body>
 </html>

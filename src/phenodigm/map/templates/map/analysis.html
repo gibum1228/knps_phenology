@@ -16,43 +16,40 @@
             $( "select[name=start_year]" ).val( "{{ start_year }}" );
             $( "select[name=end_year]" ).val( "{{ end_year }}" );
             $( "select[name=curve_fit]" ).val( "{{ curve_fit }}" );
-            $( "input[name=threshold]" ).val( "{{ threshold }}" );
-            $("#shape" + "{{ shape }}").prop("checked", true);
+            $( "select[name=threshold]" ).val( "{{ threshold }}" );
+            $( "#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
     <script type="text/javascript" src="{% static 'map/js/fusioncharts.js' %}"></script>
-    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.fint.js' %}"></script>
+    <script type="text/javascript" src="{% static 'map/js/themes/fusioncharts.theme.candy.js' %}"></script>
 </head>
 <body>
     <div class="parentLayer">
         <div class="leftLayer">
-            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute; left:-15px; top:20px; width:250px">
-            <div class="home_area">
-                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="50">
+            <img class="logo" src="{%static 'map/로고3.png'%}" alt="My Image" style="position:absolute;  top:35px; width:120px">
+            <div class="home_area" onclick="location.href='/';">
+                <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
                 <a class="home_btn" href="/">홈</a>
             </div>
 
-            <div class="analysis_area" style="background-color:#f2f2eb; border-radius: 26px;">
-                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="50">
-                <a class="analysis_btn" href="/analysis/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1" style="color:black">분석</a>
+            <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A';" style="background-color:#f2f2eb; border-radius: 15px;">
+                <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
+                <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A" style="color:black">분석</a>
             </div>
 
-            <div class="predict_area">
-                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="50">
-                <a class="predict_btn" href="/predict/?start_year=2003&end_year=2003&class_num=0&curve_fit=1&shape=1">예측</a>
+            <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P';">
+                <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
+                <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P">예측</a>
             </div>
 
-            <div class="phenocam_area">
-                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="50">
+            <div class="phenocam_area" onclick="location.href='/phenocam/';">
+                <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam/">카메라</a>
             </div>
-            <p class="ver">
-                Phenodigm<br>
-                ver 1.0.0
-            </p>
+            <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
         </div>
         <div class="middleLayer">
-            <img class="love_img" src="{%static 'map/icon/졸려반달.png'%}" alt="My Image" style="position:absolute; left:1190px; top:550px; width:500px">
+            <img class="data_img" src="{%static 'map/data.png'%}" alt="My Image">
             <div class="graphLayer">
                 <div id="chart-1">
                     {{ graph | safe }}
@@ -60,8 +57,13 @@
             </div>
             <div class="DOYLayer">
                 <b class="DOY_Title">개엽일</b>
+                <div class="DOYArea">
+                    {% autoescape off %}
+                        {{ dataframe }}
+                    {% endautoescape %}
+                </div>
+                <button id="csvDownloadButton">CSV로 내보내기</button>
             </div>
-
             <div class="settingLayer">
                 <div class="settingTitle">
                     <b>그래프 설정</b>
@@ -70,7 +72,7 @@
                         <div>
                             <b class="mountainTitle">국립공원</b>
                         </div>
-                        <select class="mountainBar" name="mountain">
+                        <select class="mountainBar" name="knps">
                             <option value="" selected></option>
                             <option value="gaya">가야산</option> <option value="gyeongju">경주</option>
                             <option value="gyeryong">계룡산</option> <option value="naejang">내장산</option>
@@ -111,11 +113,13 @@
                         </select>
                         <br><b class="curve_fittingTitle">curve_fitting</b>
                         <select class="curve_fit" name="curve_fit">
-                            <option value="1" selected>다중 로지스틱 함수</option> <option value="2">푸리에 변환</option>
-                            <option value="3">Savitzly-Golay</option> <option value="4">가우시안</option>
+                            <option value="1" selected>다중 로지스틱 함수</option><option value="2">Savitzly-Golay</option>
+                            <option value="3">가우시안</option>
                         </select>
-                        <b class="thresholdTitle">임계치(%)</b>
-                        <input class="threshold" type="number" name="threshold">
+                        <b class="thresholdTitle">임계치</b>
+                        <select class="threshold" name="threshold">
+                            <option value="0.4">40%</option><option value="0.5">50%</option>
+                        </select>
 
                         <fieldset class="graphShape">
                             <b>그래프 모양</b>
@@ -133,5 +137,69 @@
                 </div>
         </div>
     </div>
+
 </body>
+<script type="text/javascript">
+    class ToCSV {
+        constructor() {
+        // CSV 버튼에 이벤트 등록
+        document.querySelector('#csvDownloadButton').addEventListener('click', e => {
+
+            e.preventDefault()
+            this.getCSV("{{knps}}"+ "_" + {{class_num}} + "_" + {{start_year}} + "_" + {{end_year}} +"_"+ "DOY" +  ".csv")
+        })
+    }
+
+    downloadCSV(csv, filename) {
+        let csvFile;
+        let downloadLink;
+
+        const BOM = "\uFEFF";
+        csv = BOM + csv
+
+        // CSV 파일을 위한 Blob 만들기
+        csvFile = new Blob([csv], {type: "text/csv"})
+
+        // Download link를 위한 a 엘리먼스 생성
+        downloadLink = document.createElement("a")
+
+        // 다운받을 csv 파일 이름 지정하기
+        downloadLink.download = filename;
+
+        // 위에서 만든 blob과 링크를 연결
+        downloadLink.href = window.URL.createObjectURL(csvFile)
+
+        // 링크가 눈에 보일 필요는 없으니 숨겨줍시다.
+        downloadLink.style.display = "none"
+
+        // HTML 가장 아래 부분에 링크를 붙여줍시다.
+        document.body.appendChild(downloadLink)
+
+        // 클릭 이벤트를 발생시켜 실제로 브라우저가 '다운로드'하도록 만들어줍시다.
+        downloadLink.click()
+    }
+
+    getCSV(filename) {
+        // csv를 담기 위한 빈 Array를 만듭시다.
+        const csv = []
+        const rows = document.querySelectorAll("#mytable tr")
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll("td, th")
+
+            for (let j = 0; j < cols.length; j++)
+                row.push(cols[j].innerText)
+
+            csv.push(row.join(","))
+        }
+
+        // Download CSV
+        this.downloadCSV(csv.join("\n"), filename)
+    }
+}
+
+document.addEventListener('DOMContentLoaded', e => {
+    new ToCSV()
+})
+</script>
 </html>

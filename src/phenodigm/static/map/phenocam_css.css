@@ -1,0 +1,387 @@
+    @font-face {
+    font-family: 'Source Sans Pro', sans-serif;
+    src: url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@1,300&display=swap');
+    font-weight: normal;
+    font-style: normal;
+
+    }
+
+
+    a{
+      color:#ced1d9;
+    }
+
+    body {
+        font-family: 'Source Sans Pro';
+        font-size: 25px;
+        color:#ced1d9;
+        background: #17191f;
+
+    }
+
+    .parentLayer {
+
+         width: 1200px;
+         height: 720px;
+
+
+    }
+
+     .leftLayer{
+         position: absolute;
+         width: 120px;
+         height:720px;
+         left: 0px;
+         top: 0px;
+
+         background-color:#262A33;
+    }
+
+
+    .home_area{
+        position: absolute;
+        width: 100%;
+        height:30px;
+        left: 0%;
+        top:300px;
+    }
+
+    .home_area:hover {
+        background-color:#f2f2eb;
+        border-radius: 15px;
+    }
+
+    .home_btn:hover{
+        background-color:#f2f2eb;
+        border-radius: 15px;
+        color:black;
+    }
+
+
+    .home_img{
+        position: absolute;
+        left: 15%;
+        top:  2px;
+    }
+
+    .home_btn{
+        position: absolute;
+        left: 55px;
+        font-size:18px;
+        top: 1px;
+    }
+
+
+    .analysis_area{
+        position: absolute;
+        width: 100%;
+        height:30px;
+        left: 0%;
+        top:340px;
+    }
+
+    .analysis_area:hover {
+        background-color:#f2f2eb;
+        border-radius: 15px;
+    }
+
+    .analysis_btn:hover{
+        background-color:#f2f2eb;
+        border-radius: 15px;
+        color:black;
+    }
+
+    .analysis_img{
+        position: absolute;
+        left: 15%;
+        top: 0px;
+    }
+
+
+    .analysis_btn{
+        position: absolute;
+
+        left: 55px;
+        font-size:18px;
+        top: 1px;
+
+    }
+
+    .predict_area{
+        position: absolute;
+        width: 100%;
+        height: 30px;
+        top:380px;
+    }
+
+    .predict_area:hover {
+        background-color:#f2f2eb;
+        border-radius: 15px;
+    }
+
+    .predict_btn:hover{
+        background-color:#f2f2eb;
+        border-radius: 15px;
+        color:black;
+    }
+
+
+    .predict_img{
+        position: absolute;
+        left: 15%;
+        top: 2px;
+    }
+
+    .predict_btn{
+        position: absolute;
+        left: 55px;
+        font-size:18px;
+        top: 1px;
+    }
+
+    .phenocam_area{
+        position: absolute;
+        width: 100%;
+        height: 30px;
+        top:420px;
+    }
+
+    .phenocam_area:hover {
+        background-color:#f2f2eb;
+        border-radius: 15px;
+    }
+
+    .phenocam_btn:hover{
+        background-color:#f2f2eb;
+        border-radius: 15px;
+        color:black;
+    }
+
+
+    .phenocam_img{
+        position: absolute;
+        left: 15%;
+        top:  2px;
+    }
+
+    .phenocam_btn{
+        position: absolute;
+        left: 55px;
+        font-size:18px;
+        top: 1px;
+    }
+
+
+    .ver{
+        position: absolute;
+        left:10px;
+        top:580px;
+    }
+
+
+    .data_img{
+        position: absolute;
+        width : 400px;
+        left: 1250px;
+        top: 750px;
+
+    }
+
+     .middleLayer{
+        position: absolute;
+        width: 1160px;
+        height: 720px;
+        left: 120px;
+        top: 0px;
+        background-color: #17191f;
+    }
+
+    .graphLayer{
+        position: absolute;
+        width: 1000px;
+        height: 400px;
+        left: 10px;
+        top: 0px;
+        background: #262A33;
+        border-radius: 26px;
+    }
+
+    .ROILayer{
+        position: absolute;
+        width: 700px;
+        height: 310px;
+        left: 10px;
+        top: 410px;
+        background: #262A33;
+        border-radius: 26px;
+    }
+    .ROISetting{
+        position: absolute;
+        width: 290px;
+        height: 310px;
+        left: 720px;
+        top: 410px;
+        background: #262A33;
+        border-radius: 26px;
+    }
+
+    .DOY_table{
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        left: 60px;
+        top: 340px;
+
+        box-sizing: border-box;
+        background:#17191f;
+        border: solid 2px white;
+        border-radius: 20px;
+        resize: none;
+        overflow:   auto;
+
+
+        font-family: 'Source Sans Pro';
+        font-size: 20px;
+        color:white
+    }
+
+    #chart-1{
+        position: absolute;
+        top: 25px;
+    }
+
+    .settingLayer{
+        position: absolute;
+        width: 380px;
+        height: 720px;
+        left: 1020px;
+        top: 0px;
+        background: #262A33;
+        border-radius: 26px;
+    }
+
+     .settingTitle{
+        position: absolute;
+        left:160px;
+        top: 5px;
+        font-size: 30px;
+    }
+
+
+    .startTitle{
+        position: absolute;
+        left: 175px;
+        top:80px;
+        font-size:20px;
+    }
+
+    .start_year{
+        position: absolute;
+        width:120px;
+        height:25px;
+        left: 40px;
+        top:120px;
+        border-radius: 10px;
+        font-family: 'Source Sans Pro';
+        font-size:20px;
+        color:white;
+        background-color:#262A33;
+        border-color:white;
+    }
+
+    .endTitle{
+        position: absolute;
+        left: 190px;
+        top:120px;
+    }
+
+    .end_year{
+        position: absolute;
+        width:120px;
+        height:25px;
+        left: 225px;
+        top: 120px;
+        border-radius: 10px;
+        font-family: 'Source Sans Pro';
+        font-size:20px;
+        color:white;
+        background-color:#262A33;
+        border-color:white;
+    }
+
+     .curve_fittingTitle{
+        position: absolute;
+        left: 45px;
+        top: 150px;
+        font-size: 20px;
+
+    }
+
+    .curve_fit{
+        position: absolute;
+        left: 40px;
+        top: 180px;
+        width:120px;
+        height:25px;
+        border-radius: 10px;
+        font-family: 'Source Sans Pro';
+        font-size:13px;
+        color:white;
+        background-color:#262A33;
+        border-color:white;
+    }
+
+    .thresholdTitle{
+        position: absolute;
+        left: 245px;
+        top: 150px;
+        font-size:20px;
+    }
+
+    .threshold{
+        position: absolute;
+        left: 225px;
+        top: 180px;
+        width:120px;
+        height: 30px;
+        font-family: 'Source Sans Pro';
+        font-size:20px;
+        color:white;
+        background-color:#262A33;
+        border-radius: 10px;
+        border-color:white;
+    }
+
+    .graphShape{
+        position: absolute;
+        left: 40px;
+        top: 225px;
+        width:130px;
+        height:70px;
+        border-radius: 10px;
+        border-color:white;
+        font-family: 'Source Sans Pro';
+        font-size: 20px;
+
+    }
+
+    .submit_btn{
+        position: absolute;
+        width:200px;
+        height:70px;
+        left:90px;
+        top:85%;
+        background-color:#262A33;
+        border-radius: 10px;
+        border-color:white;
+        color:white;
+        font-family: 'Source Sans Pro';
+        font-size:30px;
+    }
+
+    .submit_btn:hover{
+        background-color:#f2f2eb;
+        color: black;
+    }
+
+
