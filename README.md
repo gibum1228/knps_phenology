@@ -52,7 +52,7 @@ python manage.py runserver
 │       ├── 모델 비교
 │       └── 고정형_카메라_원본_데이터
 ``` 
-[여기]()를 눌러 전체 데이터가 있는 구글 드라이브에 바로가기
+[여기](https://drive.google.com/drive/folders/18wJPKxjIfvqn2lseMWll9AnG_dIO0vnh?usp=sharing)를 눌러 전체 데이터가 있는 구글 드라이브에 바로가기
 <br><br>
 ## 4. 문서
 
