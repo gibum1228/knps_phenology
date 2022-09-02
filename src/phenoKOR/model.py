@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import torch
 from prophet import Prophet
+import pmdarima as pm
+import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -232,11 +234,13 @@ def MAPE(y, pred_y):
     return mean_absolute_percentage_error(y, pred_y)
 
 
+# 전체 모델별 검증 지표 비교하기
 def model_compare():
     # 각 모델별 검증지표 데이터 로드
     data_arima = pd.read_csv(f"{ROOT}data{MIDDLE}arima_final.csv", usecols=[3, 4, 5])
-    data_lstm = pd.read_csv(f"{ROOT}data{MIDDLE}lstm_final.csv", usecols=[0, 1, 6, 7, 8])
-    data_prophet = pd.read_csv(f"{ROOT}data{MIDDLE}prophet_final.csv", usecols=[3, 4, 5])
+    data_lstm = pd.read_csv(f"{ROOT}data{MIDDLE}lstm_final.csv", usecols=[0,1,6,7,8])
+    data_prophet = pd.read_csv(f"{ROOT}data{MIDDLE}prophet_final.csv", usecols=[3,4,5])
+
 
     data_prophet['mape'] = data_prophet['mape'] / 100  # MAPE 스케일 맞추기
 
@@ -256,11 +260,14 @@ def model_compare():
     max_r2 = r2.max(axis=1)
     min_rmse = rmse.min(axis=1)
     min_mape = mape.min(axis=1)
-    max_final = pd.concat(
-        [final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
-    max_final.columns = ['code', 'class_num', 'max_r2', 'max_r2_idx', 'min_rmse', 'min_rmse_idx', 'min_mape',
-                         'min_mape_idx']
-    max_final.to_csv(f"{ROOT}data{MIDDLE}moelcompare_result.csv")
+    max_r2_idx = r2.idxmax(axis=1)
+    min_rmse_idx = rmse.idxmin(axis=1)
+    min_mape_idx = mape.idxmin(axis=1)
+
+    max_final = pd.concat([final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
+    max_final.columns =['code', 'class_num', 'max_r2','max_r2_idx','min_rmse','min_rmse_idx', 'min_mape','min_mape_idx']
+    max_final.to_csv(f"{ROOT}data{MIDDLE}modelcompare_result.csv")
+
 
     # Prophet과 Othermodel 비교하기
     r2_other = final[['R2_lstm', 'R2_arima']]
@@ -287,19 +294,15 @@ def model_compare():
 
 # Arima 학습 및 예측 자동화
 def arima():
-    park_type = ['bukhan', 'byeonsan', 'chiak', 'dadohae', 'deogyu', 'gaya', 'gyeongju',
-                 'gyeryong', 'halla', 'hallyeo', 'jiri', 'juwang', 'mudeung', 'naejang',
-                 'odae', 'seorak', 'sobaek', 'songni', 'taean', 'taebaek', 'wolchul', 'worak']
-
     R2_list = []
     RMSE_list = []
     MAPE_list = []
     cls = []
     code = []
 
-    for park in park_type:
+    for knps in preprocessing.get_knps_name_en():
         for i in range(4):
-            data = load_data(park, i)
+            data = preprocessing.get_final_data(knps, i)
             data['date'] = pd.to_datetime(data['date'])
 
             # 학습 데이터(03-19)와 테스트 데이터(20-21) 분리
@@ -307,8 +310,8 @@ def arima():
             test_data = data[data['date'] >= '2020-01-01']
 
             # ARIMA MODEL
-            model = pm.ARIMA(order=(2, 1, 0),
-                             seasonal_order=(2, 1, 0, 46),
+            model = pm.ARIMA(order=(2, 1, 0),   # (p,d,q)
+                             seasonal_order=(2, 1, 0, 46),  # 계절 파라미터 (P,D,Q)
                              scoring='mse'
                              )
             model_fit = model.fit(train_data['avg'])
@@ -318,7 +321,8 @@ def arima():
             RMSE_list.append(RMSE(test_data['avg'], model_predict))
             MAPE_list.append(MAPE(test_data['avg'], model_predict))
             cls.append(i)
-            code.append(park)
+            code.append(knps)
 
     df = pd.DataFrame({'park': code, 'class': cls, 'R2': R2_list, 'RMSE': RMSE_list, 'MAPE': MAPE_list})
+
     df.to_csv(f"{ROOT}data{MIDDLE}arima_final.csv")

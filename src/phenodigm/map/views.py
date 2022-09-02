@@ -72,7 +72,7 @@ def analysis(request):
 
     # shape 값(연속, 연도)에 따라 그래프를 그려줌
     db['graph'] = als.show_graph(db, 0, after_df) if db['shape'] == "1" else als.show_graphs(db, 0, after_df)
-    db['dataframe'] = export_doy(db, after_df, df_sos)
+    db['dataframe'] = export_doy(db, after_df, df_sos)  # 개엽일 정보
 
     return render(request, 'map/analysis.html', db)  # 웹 페이지에 값들 뿌려주기
 
@@ -82,14 +82,15 @@ def predict(request):
     db = {}
 
     if request.method == 'GET':
-        for key in property_list:
+        for key in property_list:  # 정보 유지
             db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
 
     # 데이터 가져와서 curve_fitting 하기
     df = open_model_processing(db)
 
+    # shape 값(연속, 연도)에 따라 그래프를 그려줌
     db['graph'] = als.show_graph(db, 1, df) if db['shape'] == "1" else als.show_graphs(db, 1, df)
-    db['dataframe'] = predict_export_doy(db)
+    db['dataframe'] = predict_export_doy(db)  # 개엽일 정보
 
     return render(request, 'map/predict.html', db)
 
@@ -99,12 +100,12 @@ def predict(request):
 def phenocam(request):
     db = {}
 
-    if request.method == 'GET':
+    if request.method == 'GET':  # GET 메소드 정보 유지
         for key in property_list:
             db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
 
     if request.method == 'POST':
-        for key in property_list:
+        for key in property_list:  # POST 메소드 정보 유지
             db[f"{key}"] = request.POST[f"{key}"] if request.POST.get(f"{key}") else ""
         if request.FILES:  # input[type=file]로 값이 넘어 왔다면,
             request_dict = dict(request.FILES)  # FILES 객체를 딕셔너리로 변환
@@ -146,6 +147,7 @@ def phenocam(request):
     return render(request, 'map/phenocam.html', db)
 
 
+# 분석 페이지에서 개엽일 추출하기
 def export_doy(ori_db, df, df_sos):
     phenophase_date = ''  # 개엽일 임시 저장 문자열
     phenophase_betw = ''  # 개엽 오차 범위 임시저장 문자열
@@ -207,53 +209,54 @@ def export_doy(ori_db, df, df_sos):
     return html_DataFrame
 
 
+# 예측 페이지에서 개엽일 추출하기
 def predict_export_doy(ori_db):
-    #예측 모델 불러오기
+    # 예측 모델 불러오기
     with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
-    #예측모델 input 값 (일 수로 지정)
-    periods = 4 #예측모델 끝날이 2021년 12월 27일 -> +4 12월 31일로
+    # 예측모델 input 값 (일 수로 지정)
+    periods = 4  # 예측모델 끝날이 2021년 12월 27일 -> +4 12월 31일로
     for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         if i % 4 == 0 or i % 100 == 0:
-            periods += 366 #윤년이면 366일
+            periods += 366  # 윤년이면 366일
         else:
-            periods += 365 #1년 365일
+            periods += 365  # 1년 365일
 
-    future = m.make_future_dataframe(periods) #예측을 위해 빈데이터 프레임 생성
-    forecast = m.predict(future) #예측
+    future = m.make_future_dataframe(periods)  # 예측을 위해 빈데이터 프레임 생성
+    forecast = m.predict(future)  # 예측
 
-    df = forecast[['ds', 'yhat']] #예측 데이터 프레임에서 날짜, EVI 추출
-    df.columns = ['date', 'avg'] #추출된 데이터 프레임 컬럼명 변경
-    df['date'] = df['date'].astype('str') #날짜 타입 변경
-    doy_list = [] #doy 빈 리스트 생성
+    df = forecast[['ds', 'yhat']]  # 예측 데이터 프레임에서 날짜, EVI 추출
+    df.columns = ['date', 'avg']  # 추출된 데이터 프레임 컬럼명 변경
+    df['date'] = df['date'].astype('str')  # 날짜 타입 변경
+    doy_list = []  # doy 빈 리스트 생성
     for i in range(len(df)):
-        date = df.loc[i, 'date'] #날짜 추출
-        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j") #doy 계산
-        doy_list.append(calculate_doy)#계산한 doy 리스트추가
+        date = df.loc[i, 'date']  # 날짜 추출
+        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j")  # doy 계산
+        doy_list.append(calculate_doy)  # 계산한 doy 리스트추가
 
     df['DOY'] = doy_list
 
     # 빈 문자열 생성
-    phenophase_date = '' 
+    phenophase_date = ''
     phenophase_betw = ''
-    
-    #빈 리스트 생성
+
+    # 빈 리스트 생성
     sos = []
     doy = []
     betwn = []
 
     # sos 기준으로 개엽일 추출
-    if ori_db['curve_fit'] == '1': #더블 로지스틱이면 sos 활용 개엽일 추출
-        df, df_sos = preprocessing.curve_fit(df, ori_db) #커브피팅 실행
-        df_sos.columns = ['year', 'sos'] #컬럼명 변경
-        
+    if ori_db['curve_fit'] == '1':  # 더블 로지스틱이면 sos 활용 개엽일 추출
+        df, df_sos = preprocessing.curve_fit(df, ori_db)  # 커브피팅 실행
+        df_sos.columns = ['year', 'sos']  # 컬럼명 변경
+
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
             phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-            phenophase_date = (f'{year}년 : {phenophase_doy}일') #연도-일로 추가
-            sos.append(phenophase_date) #추출된 개엽일 추가
+            phenophase_date = (f'{year}년 : {phenophase_doy}일')  # 연도-일로 추가
+            sos.append(phenophase_date)  # 추출된 개엽일 추가
 
     else:
-        df, df_sos = preprocessing.curve_fit(df, ori_db)#커브피팅 실행
+        df, df_sos = preprocessing.curve_fit(df, ori_db)  # 커브피팅 실행
 
     for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         data = df[df['date'].str[:4] == str(year)]
@@ -261,30 +264,32 @@ def predict_export_doy(ori_db):
             float(ori_db["threshold"])))  ##개엽일 추출 공식
 
         ## 개엽일 사이값 찾기
-        high = data[data['avg'] >= thresh]['date'].iloc[0]# 계엽일 보다 1인덱스 값 추출 - 최솟값 지정
-        low = data.date[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[0] #계산된 개엽일 기준값 보다 1 인덱스 낮은 일 추출 - 최댓값 지정
+        high = data[data['avg'] >= thresh]['date'].iloc[0]  # 계엽일 보다 1인덱스 값 추출 - 최솟값 지정
+        low = data.date[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[
+            0]  # 계산된 개엽일 기준값 보다 1 인덱스 낮은 일 추출 - 최댓값 지정
 
-        phenophase_doy = format(pd.to_datetime(low), '%Y-%m-%d') #최솟값 = 개엽일
+        phenophase_doy = format(pd.to_datetime(low), '%Y-%m-%d')  # 최솟값 = 개엽일
         phenophase_date = format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'),
-                                 '%j') + '일,' + phenophase_doy #날짜로 변환
-        phenophase_betw = (f'{low} ~ {high}') #최솟갑 ~ 최댓값 사이 표시 (오차범위)
-        doy.append(phenophase_date) #추가한값 추가
-        betwn.append(phenophase_betw)#추가한값 추가
+                                 '%j') + '일,' + phenophase_doy  # 날짜로 변환
+        phenophase_betw = (f'{low} ~ {high}')  # 최솟갑 ~ 최댓값 사이 표시 (오차범위)
+        doy.append(phenophase_date)  # 추가한값 추가
+        betwn.append(phenophase_betw)  # 추가한값 추가
 
-    if ori_db['curve_fit'] == '1': #더블로지스틱이면 3개의 컬럼으로 데이터프레임 구성
+    if ori_db['curve_fit'] == '1':  # 더블로지스틱이면 3개의 컬럼으로 데이터프레임 구성
         total_DataFrame = pd.DataFrame(columns=['SOS기준 개엽일', '임계치 개엽일', '임계치 오차범위'])
         for i in range(len(doy)):
             total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
     else:
-        total_DataFrame = pd.DataFrame(columns=['임계치 개엽일', '임계치 오차범위']) #나머지 3개의 컬럼으로 데이터프레임 구성
+        total_DataFrame = pd.DataFrame(columns=['임계치 개엽일', '임계치 오차범위'])  # 나머지 3개의 컬럼으로 데이터프레임 구성
         for i in range(len(doy)):
             total_DataFrame.loc[i] = [doy[i], betwn[i]]
-            
-    #데이터 프레임 html로 변경
-    html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id='mytable') 
+
+    # 데이터 프레임 html로 변경
+    html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id='mytable')
     return html_DataFrame
 
 
+# 모델에 원하는 범위만큼 예측해서 값 받기
 def open_model_processing(ori_db):
     # 예측 prophet 모델
     with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
