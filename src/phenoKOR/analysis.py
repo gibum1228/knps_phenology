@@ -1,13 +1,24 @@
-# 메서드
-import pandas as pd
+import warnings
+import json
+from datetime import date, timedelta
+
+import cv2
 import numpy as np
-from datetime import datetime
-from sklearn.linear_model import LinearRegression
+import numpy.typing as npt
+import pandas as pd
 from scipy.optimize import minimize
 from scipy.signal import savgol_filter
-import cv2
-import warnings
+from sklearn.linear_model import LinearRegression
+from fusioncharts import FusionCharts
+from fusioncharts import FusionTable
+from fusioncharts import TimeSeries
+
+import preprocessing
+
 warnings.filterwarnings('ignore')
+
+# 전역 변수
+ROOT, MIDDLE = preprocessing.get_info()
 
 
 # Double Logistic 함수 정의
@@ -20,11 +31,10 @@ def Rangers_DL(input_data, start_year, end_year, ori_db):
 
     data = input_data
 
-
-    if ori_db['AorP'] == 'A' :
+    if ori_db['AorP'] == 'A':
         data_final = pd.DataFrame(columns=['code', 'class', 'date', 'avg', 'DOY'])
     else:
-        data_final = pd.DataFrame(columns=['date', 'avg', 'DOY'])# return 할 데이터 프레임
+        data_final = pd.DataFrame(columns=['date', 'avg', 'DOY'])  # return 할 데이터 프레임
     sos_list = []  # return 할 SOS 값
 
     each_year_list = []
@@ -51,7 +61,8 @@ def Rangers_DL(input_data, start_year, end_year, ori_db):
         eos : end of season, 감소 변곡점, rau : eos에서 변화율
         '''
         mn, mx, sos, rsp, eos, rau = par[0], par[1], par[2], par[3], par[4], par[5]
-        xpred_dl = mn + (mx - mn) * (1 / (1 + np.exp(-rsp * (t - sos))) + 1 / (1 + np.exp(rau * (t - eos))) - 1)  # 더블 로지스틱 수식
+        xpred_dl = mn + (mx - mn) * (
+                1 / (1 + np.exp(-rsp * (t - sos))) + 1 / (1 + np.exp(rau * (t - eos))) - 1)  # 더블 로지스틱 수식
         return pd.Series(xpred_dl, index=t)
 
     # SSE 함수 정의
@@ -63,7 +74,7 @@ def Rangers_DL(input_data, start_year, end_year, ori_db):
         return sse
 
     # 연도별 Double Logistic 적용 위한 반복문
-    for each_year in range(start_year, end_year+1):
+    for each_year in range(start_year, end_year + 1):
 
         data_re = data[data['Year'] == each_year]
         data_re.index = data_re['DOY']
@@ -176,7 +187,7 @@ def Rangers_DL(input_data, start_year, end_year, ori_db):
         sos_list.append(np.floor(opt_param[2]))  # 반환할 SOS 데이터 프레임에 추가
 
     sos_df = pd.DataFrame()
-    sos_df['Year'] = [i for i in range(start_year, end_year+1)]
+    sos_df['Year'] = [i for i in range(start_year, end_year + 1)]
     sos_df['sos_DOY'] = sos_list  # 누적 DOY를 반환할 데이터 프레임 인덱스로 설정
 
     return data_final, sos_df
@@ -202,15 +213,14 @@ def Rangers_SG(data_input, start_year, end_year, ori_db):
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
 
-
     # Scipy 내부에 있는 savgol_filter 활용
     print(data.avg.shape)
     data['avg'] = savgol_filter(data.avg, window_length=5, polyorder=1)
 
-
     if ori_db['AorP'] == 'A':
         data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
-    else : data = data.loc[:, ['date', 'avg', 'DOY']]
+    else:
+        data = data.loc[:, ['date', 'avg', 'DOY']]
 
     sos_df = [0]
     return data, sos_df
@@ -235,11 +245,10 @@ def Rangers_GSN(data_input, start_year, end_year, ori_db):
 
     data['DOY'] = data['date'].apply(lambda x: int(format(datetime.strptime(x, '%Y-%m-%d'), '%j')))  # DOY 칼럼 추가
 
-
     # Gaussian Filtering
-    kernel1d = cv2.getGaussianKernel(46*(end_year - start_year + 1), 1)
+    kernel1d = cv2.getGaussianKernel(46 * (end_year - start_year + 1), 1)
     kernel2d = np.outer(kernel1d, kernel1d.transpose())
-    data['avg'] = cv2.filter2D(np.array(data.avg), -1, kernel2d).reshape(-1).tolist() # convolve
+    data['avg'] = cv2.filter2D(np.array(data.avg), -1, kernel2d).reshape(-1).tolist()  # convolve
 
     if ori_db['AorP'] == 'A':
         data = data.loc[:, ['code', 'class', 'date', 'avg', 'DOY']]
@@ -249,29 +258,29 @@ def Rangers_GSN(data_input, start_year, end_year, ori_db):
     sos_df = [0]
     return data, sos_df
 
+
 # PPT 시각화
 
 # 고정 카메라 결측치 확인
 def pheno_test_plot():
-
     pheno_test = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/pheno_test.csv')
     pheno_test = pheno_test.groupby('day').mean()  # 일별 평균 데이터 추출
 
     # 지리산 2020년 1월 데이터 확인 Plot
-    plt.figure(figsize=(15,5))
+    plt.figure(figsize=(15, 5))
     plt.scatter(pheno_test.index, pheno_test.rcc, color='red')
     plt.xticks(range(32), range(32))
     plt.ylim(0.2, 0.4)
     plt.gca().axes.yaxis.set_visible(False)  # y축 값 제거
     plt.show()
 
-def see_sos():
 
+def see_sos():
     # 개엽일
     SOS_split = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/SOS_final.csv')
     SOS_split.drop('Unnamed: 0', axis=1, inplace=True)
     SOS_split.index = range(2003, 2022)
-    SOS_split = SOS_split.iloc[:,SOS_split.columns.str.contains('2')]
+    SOS_split = SOS_split.iloc[:, SOS_split.columns.str.contains('2')]
     SOS_split.columns = SOS_split.columns.str[:-2]
 
     sos_test = SOS_split.loc[:, 'bukhan']
@@ -279,7 +288,7 @@ def see_sos():
     # 4년 씩 묶어서 계산
     test_4 = []
     for i in range(4):
-        test_4.append(np.mean(sos_test[(sos_test.index >= 2003+4*i) & (sos_test.index < 2007+4*i)]))
+        test_4.append(np.mean(sos_test[(sos_test.index >= 2003 + 4 * i) & (sos_test.index < 2007 + 4 * i)]))
     for i in range(2019, 2022):
         test_4.append(sos_test[sos_test.index == i].iloc[0])
 
@@ -287,10 +296,11 @@ def see_sos():
     print(test_4_df)
 
     # 분석 개엽일 추세 Plot
-    plt.figure(figsize=(20,5))
+    plt.figure(figsize=(20, 5))
     plt.rcParams['font.size'] = 12
     plt.plot(test_4, color='red', marker='o', markersize=8)
-    plt.xticks([0,1,2,3,4,5,6], labels=['2003~2006','2007~2010','2011~2014','2015~2018','2019','2020','2021'])
+    plt.xticks([0, 1, 2, 3, 4, 5, 6],
+               labels=['2003~2006', '2007~2010', '2011~2014', '2015~2018', '2019', '2020', '2021'])
     plt.ylim(90, 120)
     plt.axis('off')
     plt.show()
@@ -343,7 +353,6 @@ def corr_sos_temp():
 
 # 식생지수의 최대값과 최소값 변화 추이 비교 함수
 def sos_minmax(park_input):
-
     CV_df = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/DL_Final.csv')  # Double Logistic 적용된 데이터
     ori_data = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/knps_final.csv')  # 원본 데이터
 
@@ -390,13 +399,13 @@ def sos_minmax(park_input):
     print('min \n', CV_minmax['min'])
 
     # min, max 값 서로 비교 Plot
-    plt.figure(figsize=(20,5))
+    plt.figure(figsize=(20, 5))
     plt.title(f'Comparing {park_input} Broadleaved MIN & Max EVI')
     plt.plot(OR_minmax.index, OR_minmax['min'], color='black', label='Original Min', linestyle='dashed', lw=2)
     plt.plot(OR_minmax.index, OR_minmax['max'], color='black', label='Original Max', linestyle='dashed', lw=2)
     plt.plot(CV_minmax.index, CV_minmax['min'], color='red', label='Curve Fitting Min', lw=3)
     plt.plot(CV_minmax.index, CV_minmax['max'], color='red', label='Curve Fitting Max', lw=3)
-    plt.xticks(range(2002,2023),range(2002,2023))
+    plt.xticks(range(2002, 2023), range(2002, 2023))
     plt.ylim(0, 1)
     plt.legend(loc='upper right')
     plt.show()
@@ -404,7 +413,6 @@ def sos_minmax(park_input):
 
 # 1년치 원본값 Plot 확인 (2021년 지리산 활엽수림)
 def org_bl():
-
     hello = pd.read_csv('C:/Users/cdbre/Desktop/Project/data/knps_final.csv')
 
     hello = hello[(hello['code'] == 'jiri') & (hello['class'] == 2)]
@@ -423,3 +431,170 @@ def org_bl():
     plt.plot(hello.DOY, hello.avg, color='blue', lw=4)
     plt.axis('off')
     plt.show()
+
+
+# 연속된 하나의 그래프를 그려주는 메소드
+def show_graph(ori_db: pd.DataFrame, option: int = 2):
+    value_name = "EVI" if option < 2 else "Gcc"  # 식생지수 이름
+
+    if option == 0:  # 분석
+        # df = preprocessing.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
+        # df, df_sos = pk.curve_fit(df, ori_db)
+        keyword = "analysis"
+    elif option == 1:  # 예측
+        # df = open_model_processing(ori_db)
+        keyword = "predict"
+
+    # 시연용
+    if option < 2:
+        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+            'date')
+    else:
+        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
+        ori_db['knps'] = 'jiri'
+        ori_db['class_num'] = "sungsamjae"
+        ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
+
+    data = []  # 그래프를 그리기 위한 데이터
+    schema = [{"name": "Time", "type": "date", "format": "%Y-%m-%d"}, {"name": "Type", "type": "string"},
+              {"name": "value", "type": "number"}]  # 하나의 data 구조
+
+    for i in range(len(df)):  # data에 값 채우기
+        data.append([df['date'].iloc[i], value_name, df['avg' if option < 2 else 'gcc'].iloc[i]])  # schema 형태에 맞게 데이터 추가
+
+        # 고정형 카메라라면 Rcc 값도 추가
+        if option >= 2: data.append([df['date'].iloc[i], "Rcc", df['rcc'].iloc[i]])
+
+    fusionTable = FusionTable(json.dumps(schema), json.dumps(data))  # 데이터 테이블 만들기
+    timeSeries = TimeSeries(fusionTable)  # 타임시리즈 만들기
+
+    # 그래프 속성 설정하기
+    timeSeries.AddAttribute('caption', f'{{"text":"{value_name} of {ori_db["knps"]}"}}')
+    timeSeries.AddAttribute('chart',
+                            f'{{"exportEnabled": "1", "exportfilename": "{ori_db["knps"]}_{ori_db["class_num"]}_{ori_db["start_year"]}_{ori_db["end_year"]}"}}')
+    timeSeries.AddAttribute('subcaption', f'{{"text":"class_num : {ori_db["class_num"]}"}}')
+    timeSeries.AddAttribute('series', '"Type"') # type으로 값 나누기
+    timeSeries.AddAttribute('yaxis', [{"plot": {"value": "value"}, "title": "value"}])
+
+    width = 950 if option < 2 else 680
+    height = 350 if option < 2 else 250
+    # 그래프 그리기
+    fcChart = FusionCharts("timeseries", "ex1", width, height, "chart-1", "json", timeSeries)
+
+    # 그래프 정보 넘기기
+    return fcChart.render()
+
+
+# 선택된 만큼의 여러 개의 그래프를 그려주는 메소드
+def show_graphs(ori_db: dict, option: int = 2):
+    value_name = 'EVI' if option < 2 else 'Gcc'
+
+    if option == 0:
+        # df = pd.read_csv(ROOT + f"{MIDDLE}data{MIDDLE}knps_final.csv")
+        # df = df[df['class'] == int(ori_db['class_num'])]
+        # df = df[df['code'] == ori_db['knps']]
+        #
+        # df, df_sos = pk.curve_fit(df, ori_db)
+        keyword = "analysis"
+    elif option == 1:
+        # df = open_model_processing(ori_db) # curve fitting된 데이터 가져오기
+        keyword = "predict"
+
+    # 시연용
+    if option < 2:
+        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+            'date')
+    else:
+        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
+        ori_db['knps'] = 'jiri'
+        ori_db['class_num'] = "sungsamjae"
+        ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
+
+    # 그래프 속성 및 데이터를 저장하는 변수
+    db = {
+        "chart": {  # 그래프 속성
+            "exportEnabled": "1",
+            "exportfilename": f"{ori_db['knps']}_{ori_db['class_num']}_{ori_db['start_year']}_{ori_db['end_year']}",
+            "bgColor": "#FFFFFF",
+            "showBorder": "0",
+            "showvalues": "0",
+            "numvisibleplot": "12",
+            "caption": f"{value_name} of {ori_db['knps']}",
+            "subcaption": f"class_num : {ori_db['class_num']}",
+            "yaxisname": f"{value_name}",
+            "drawAnchors": "0",
+            "plottooltext": f"<b>$dataValue</b> {value_name} of $label",
+        },
+        "categories": [{  # X축
+            "category": [{"label": str(i)} for i in range(1, 365, 8 if option == 0 else 1)]
+            # 분석은 8-day, 예측과 고정형 카메라는 1-day
+        }],
+        "dataset": []  # Y축
+    }
+
+    # 데이터셋에 데이터 넣기
+    for now in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):  # start_year에서 end_year까지
+        if option < 2:
+            db["dataset"].append({
+                "seriesname": f"{now} EVI",  # 레이블 이름
+                # 해당 연도에 시작 (1월 1일)부터 (12월 31)일까지의 식생지수 값을 넣기
+                "data": [{"value": i} for i in
+                         df[df['date'].str[:4] == str(now)]['avg' if option < 2 else 'gcc']]
+            })
+        else:
+            for key in ["gcc", "rcc"]:
+                db["dataset"].append({
+                    "seriesname": f"{now} {key}",  # 레이블 이름
+                    # 해당 연도에 시작 (1월 1일)부터 (12월 31)일까지의 식생지수 값을 넣기
+                    "data": [{"value": i} for i in
+                             replace_blank(df[df['date'].str[:4] == str(now)], key)]
+                })
+
+    width = 950 if option < 2 else 680
+    height = 350 if option < 2 else 250
+    # 그래프 그리기
+    fcChart = FusionCharts('scrollline2d', 'ex1', width, height, 'chart-1', 'json', json.dumps(db))
+
+    return fcChart.render()  # 그래프 정보 넘기기
+
+
+# 고정형 카메라 정보에서 여러 개의 그래프를 그리기 위한 결측치를 None으로 채우기
+def replace_blank(df: pd.DataFrame, key: str) -> list:
+    replace_value_list = []  # 365개의 식생지수를 리턴할 리스트
+    index, last_date = 0, date(int(df['date'].iloc[0][:4]), 1, 1)
+    info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]  # 월별 일 수 정보
+
+    for i in range(len(df)):  # data에 값 채우기
+        focus_date = (date.fromisoformat(df['date'].iloc[i]))
+
+        # focus와 last 사이에 간격이 있을 경우 결측치가 있는 것이기 때문에 None으로 대체
+        for j in range((focus_date - last_date).days - 1):
+            replace_value_list.append("None")
+
+        # focus 값을 넣고 last를 업데이트
+        replace_value_list.append(df[key].iloc[i])
+        last_date = focus_date
+
+    # 12월 31일에 끝나지 않는다면, 미래 결측치를 None으로 채우기
+    for i in range((date(int(df['date'].iloc[0][:4]), 12, 31) - last_date).days):
+        replace_value_list.append("None")
+
+    print(replace_value_list)
+    print(len(replace_value_list))
+
+    return replace_value_list
+
+
+# 윤년 구하는 메소드
+def get_Feb_day(year: int) -> int:
+    # 4, 100, 400으로 나누어 떨어진다면 윤년
+    if year % 4 == 0 or year % 100 == 0 or year % 400 == 0:
+        day = 29
+    else:
+        day = 28
+
+    return day
