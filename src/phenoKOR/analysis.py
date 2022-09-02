@@ -566,10 +566,9 @@ def show_graphs(ori_db: dict, option: int = 2):
 def replace_blank(df: pd.DataFrame, key: str) -> list:
     replace_value_list = []  # 365개의 식생지수를 리턴할 리스트
     index, last_date = 0, date(int(df['date'].iloc[0][:4]), 1, 1)
-    info_day = [None, 31, None, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]  # 월별 일 수 정보
 
     for i in range(len(df)):  # data에 값 채우기
-        focus_date = (date.fromisoformat(df['date'].iloc[i]))
+        focus_date = date.fromisoformat(df['date'].iloc[i])
 
         # focus와 last 사이에 간격이 있을 경우 결측치가 있는 것이기 때문에 None으로 대체
         for j in range((focus_date - last_date).days - 1):
@@ -583,8 +582,8 @@ def replace_blank(df: pd.DataFrame, key: str) -> list:
     for i in range((date(int(df['date'].iloc[0][:4]), 12, 31) - last_date).days):
         replace_value_list.append("None")
 
-    print(replace_value_list)
-    print(len(replace_value_list))
+    print(df["date"])
+    print(replace_value_list.count("None"))
 
     return replace_value_list
 
