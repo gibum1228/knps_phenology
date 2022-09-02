@@ -50,12 +50,12 @@ python manage.py runserver
 │   │
 │   └── 분석을 위한 데이터
 │       ├── 모델 비교
-│       └── 고정형_카메라_원본_데이터
+│       └── 기온, 강수량 데이터
 ``` 
 [여기](https://drive.google.com/drive/folders/18wJPKxjIfvqn2lseMWll9AnG_dIO0vnh?usp=sharing)를 눌러 전체 데이터가 있는 구글 드라이브에 바로가기
 <br><br>
 ## 4. 문서
 
-- [data_preprocessing.py]()
-- [analysis.py]()
-- [model.py]()
+- [preprocessing.py](https://github.com/gibum1228/knps_phenology/blob/main/document/preprocessing.md)
+- [analysis.py](https://github.com/gibum1228/knps_phenology/blob/main/document/analysis.md)
+- [model.py](https://github.com/gibum1228/knps_phenology/blob/main/document/model.md)

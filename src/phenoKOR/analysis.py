@@ -21,25 +21,18 @@ ROOT, MIDDLE = preprocessing.get_info()
 
 
 # 연속된 하나의 그래프를 그려주는 메소드
-def show_graph(ori_db: pd.DataFrame, option: int = 2):
+def show_graph(ori_db: pd.DataFrame, option: int = 2,  df: pd.DataFrame = None):
     value_name = "EVI" if option < 2 else "Gcc"  # 식생지수 이름
 
-    if option == 0:  # 분석
-        # df = preprocessing.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        keyword = "analysis"
-    elif option == 1:  # 예측
-        # df = open_model_processing(ori_db)
-        keyword = "predict"
-
     # 시연용
+    keyword = "analysis" if option == 0 else "predict"
     if option < 2:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
-        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
-                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
-            'date')
+        pass
+        # df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        # df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+        #         (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        #     'date')
     else:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
         ori_db['knps'] = 'jiri'
         ori_db['class_num'] = "sungsamjae"
         ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
@@ -79,25 +72,15 @@ def show_graph(ori_db: pd.DataFrame, option: int = 2):
 def show_graphs(ori_db: dict, option: int = 2, df: pd.DataFrame = None):
     value_name = 'EVI' if option < 2 else 'Gcc'
 
-    if option == 0:
-        # df = pd.read_csv(ROOT + f"{MIDDLE}data{MIDDLE}knps_final.csv")
-        # df = df[df['class'] == int(ori_db['class_num'])]
-        # df = df[df['code'] == ori_db['knps']]
-        #
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        keyword = "analysis"
-    elif option == 1:
-        # df = open_model_processing(ori_db) # curve fitting된 데이터 가져오기
-        keyword = "predict"
-
     # 시연용
+    keyword = "analysis" if option == 0 else "predict"
     if option < 2:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
-        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
-                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
-            'date')
+        pass
+        # df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        # df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+        #         (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        #     'date')
     else:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
         ori_db['knps'] = 'jiri'
         ori_db['class_num'] = "sungsamjae"
         ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
