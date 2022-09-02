@@ -92,16 +92,17 @@
 리턴값 :    
 
 ## double_logistic_func
-매개변수 :    
-기능 :    
-리턴값 :     
+매개변수 : (input_data : pd.DataFrame, start_year : integer, end_year : integer, ori_db : dict)    
+기능 : Double Logistic 연산 메소드 (Double Logistic 수식 : mn + (mx - mn) * (1 / (1 + np.exp(-rsp * (t - sos))) + 1 / (1 + np.exp(rau * (t - eos))) - 1) ,
+mn : min EVI, mx : max EVI, sos(start of season) : 증가 변곡점, rsp : sos에서 변화율, eos(end of season) : 감소 변곡점, rau : eos에서 변화율 )
+리턴값 : (pd.DataFrame(Double Logistic 적용된 EVI 값), pd.DataFrame(연도별 sos))
 
 ## savitzky_golay_func
-매개변수 :    
-기능 :    
-리턴값 :    
+매개변수 : (data_input : pd.DataFrame, start_year : integer, end_year : integer, ori_db : dict)   
+기능 : Savitzky Golay 연산 메소드   
+리턴값 : (pd.DataFrame, list)   
 
 ## gaussian_func
-매개변수 :    
-기능 :    
-리턴값 :    
+매개변수 : (data_input : pd.DataFrame, start_year : integer, end_year : integer, ori_db : dict) 
+기능 : Gaussian Filtering 연산 메소드
+리턴값 : (pd.DataFrame, list)
