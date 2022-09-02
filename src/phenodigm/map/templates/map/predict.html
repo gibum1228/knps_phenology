@@ -29,22 +29,22 @@
             <div class="menu_area">
                 <div class="home_area" onclick="location.href='/';">
                     <img class="home_img" src="{%static 'map/home.png'%}" alt="My Image" width="30">
-                    <a class="home_btn" href="/">홈</a>
+                    <p class="home_btn">홈</p>
                 </div>
 
                 <div class="analysis_area" onclick="location.href='/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A';" >
                     <img class="analysis_img" src="{%static 'map/analysis.png'%}" alt="My Image" width="28">
-                    <a class="analysis_btn" href="/analysis/?knps=jiri&start_year=2003&end_year=2003&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=A">분석</a>
+                    <p class="analysis_btn">분석</p>
                 </div>
 
                 <div class="predict_area" onclick="location.href='/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P';" style="background-color:#b4c8bb; border-radius: 1px;">
                     <img class="predict_img" src="{%static 'map/pred.png'%}" alt="My Image" width="30">
-                    <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P" style="color:black">예측</a>
+                    <p class="predict_btn">예측</p>
                 </div>
 
                 <div class="phenocam_area" onclick="location.href='/phenocam/?curve_fit=1&shape=1';">
                     <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
-                    <a class="phenocam_btn" href="/phenocam">카메라</a>
+                    <p class="phenocam_btn">카메라</p>
                 </div>
             </div>
             <img class="ver" src="{%static 'map/ver.png'%}" alt="My Image" width="100">
