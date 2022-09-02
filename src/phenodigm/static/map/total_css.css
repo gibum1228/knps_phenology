@@ -1,471 +1,237 @@
 
 
-    @font-face {
-    font-family: 'Source Sans Pro', sans-serif;
-    src: url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@1,300&display=swap');
-    font-weight: normal;
-    font-style: normal;
-
+    a, b, p{
+        position:relative;
+        color:black;
+        font-size:15px;
+        text-decoration: none;
     }
 
-
-    a{
-      color:#ced1d9;
+    body, .parentLayer {
+        width: 1550px;
+        height: 720px;
+        margin: 0;
+        padding: 0;
+        font-size: 15px;
+        color:black;
+        background: #b4c8bb;
+        display: flex;
+        overflow: hidden;
     }
 
-    body {
-        font-family: 'Source Sans Pro';
-        font-size: 25px;
-        color:#ced1d9;
-        background: #17191f;
-
+    .leftLayer, .middleLayer, .rightLayer{
+        float:left;
     }
 
-    .parentLayer {
-
-         width: 1200px;
-         height: 720px;
-
-
+    .middleLayer, .rightLayer{
+        left-padding:15px;
     }
-
 
     .page_title{
-        position: absolute;
+        position: relative;
         font-size:40px;
+        color:black;
         left: 20px;
-        top: 10px;
+        top: 5px;
 
-    }
-
-    .leftLayer{
-        position: absolute;
-        width: 120px;
-        height:720px;
-        left: 0px;
-        top: 0px;
-
-        background-color:#262A33;
     }
 
     .map{
-        position: absolute;
-        left:20px;
-        top: 100px;
+        position:relative;
+        left:10px;
         width: 1000px;
-
+        overflow:hidden;
     }
 
+    .leftLayer{
+        width: 100px;
+        height:720px;
+        background-color:#f7f9fa;
+        border-radius:5px;
+    }
 
-    .home_area{
-        position: absolute;
-        width: 100%;
-        height:30px;
-        left: 0%;
+    .logo{
+        position:absolute;
+        top:35px;
+        left:-10px;
+        width:120px;
+    }
+
+    .menu_area{
+        position : relative;
+        width:100%;
+        height:140px;
         top:300px;
+        border: 3px solid #b4c8bb;
     }
 
-    .home_area:hover {
-        background-color:#f2f2eb;
-        border-radius: 15px;
-    }
-
-    .home_btn:hover{
-        background-color:#f2f2eb;
-        border-radius: 15px;
-        color:black;
-    }
-
-
-    .home_img{
-        position: absolute;
-        left: 15%;
-        top:  2px;
-    }
-
-    .home_btn{
-        position: absolute;
-        left: 55px;
-        font-size:18px;
-        top: 1px;
-    }
-
-
-    .analysis_area{
-        position: absolute;
+    .home_area, .analysis_area, .predict_area, .phenocam_area {
         width: 100%;
-        height:30px;
-        left: 0%;
-        top:340px;
+        height:20px;
+        padding-top:15px;
+        border:1px, solid, black;
     }
 
-    .analysis_area:hover {
-        background-color:#f2f2eb;
-        border-radius: 15px;
+    .home_area:hover, .analysis_area:hover, .predict_area:hover, .phenocam_area:hover {
+        background-color:#b4c8bb;
     }
-
-    .analysis_btn:hover{
-        background-color:#f2f2eb;
-        border-radius: 15px;
+    .home_btn:hover, .analysis_btn:hover, .predict_btn:hover, .phenocam_btn:hover{
+        background-color:#b4c8bb;
         color:black;
     }
 
-    .analysis_img{
-        position: absolute;
-        left: 15%;
-        top: 0px;
+    .home_img, .analysis_img, .predict_img, .phenocam_img{
+        position: relative;
+        left: 10%;
+        bottom :10px;
     }
-
-
-    .analysis_btn{
-        position: absolute;
-
-        left: 55px;
-        font-size:18px;
-        top: 1px;
-
+    .home_btn, .analysis_btn, .predict_btn, .phenocam_btn{
+        position: relative;
+        left: 12%;
+        font-size:15px;
+        bottom: 15px;
     }
-
-    .predict_area{
-        position: absolute;
-        width: 100%;
-        height: 30px;
-        top:380px;
-    }
-
-    .predict_area:hover {
-        background-color:#f2f2eb;
-        border-radius: 15px;
-    }
-
-    .predict_btn:hover{
-        background-color:#f2f2eb;
-        border-radius: 15px;
-        color:black;
-    }
-
-
-    .predict_img{
-        position: absolute;
-        left: 15%;
-        top: 2px;
-    }
-
-    .predict_btn{
-        position: absolute;
-        left: 55px;
-        font-size:18px;
-        top: 1px;
-    }
-
-    .phenocam_area{
-        position: absolute;
-        width: 100%;
-        height: 30px;
-        top:420px;
-    }
-
-    .phenocam_area:hover {
-        background-color:#f2f2eb;
-        border-radius: 15px;
-    }
-
-    .phenocam_btn:hover{
-        background-color:#f2f2eb;
-        border-radius: 15px;
-        color:black;
-    }
-
-
-    .phenocam_img{
-        position: absolute;
-        left: 15%;
-        top:  2px;
-    }
-
-    .phenocam_btn{
-        position: absolute;
-        left: 55px;
-        font-size:18px;
-        top: 1px;
-    }
-
-
     .ver{
-        position: absolute;
         left:10px;
         top:580px;
     }
 
     .middleLayer{
-        position: absolute;
-        width: 1160px;
+        width: 990px;
         height: 720px;
         left: 120px;
         top: 0px;
-        background-color: #17191f;
+        background-color: #b4c8bb;
     }
 
-    .settingLayer{
-        position: absolute;
-        width: 1000px;
-        height: 310px;
-        left: 10px;
-        top: 410px;
-        background: #262A33;
-        border-radius: 26px;
+    .background {
+        width: 965px;
+        height: 365px;
+        margin-bottom: 10px;
+        margin-left:10px;
+        background:white;
+        border-radius:5px;
+        box-shadow: 0.5px 0.5px 0.5px 0.5px gray;
+        text-align:center;
     }
 
-    .settingFile{
-        height:200px;
-        border-radius: 26px;
-        border-white;
+    #chart-1 {
+        position:absolute;
+        left:120px;
     }
 
-
-
-    .graphLayer{
-        position: absolute;
-        width: 1000px;
-        height: 400px;
-        left: 10px;
-        top: 0px;
-        background: #262A33;
-        border-radius: 26px;
+    .set1, .set2{
+        position:relative;
+        display:flex;
+        padding-bottom:20px;
+        height:100px;
+    }
+    .set2{
+        margin-left:100px;
     }
 
-    #chart-1{
-        position: absolute;
-        top: 0px;
-        left:20px;
-    }
-
-    .DOYLayer{
-        position: absolute;
-        width: 370px;
-        height: 550px;
-        left: 1020px;
-        top: 0px;
-        background: #262A33;
-        border-radius: 26px;
-        font-family: 'Source Sans Pro';
-        font-size: 5px;
-        color:white
-    }
-
-    .DOY_Title{
-        position: absolute;
-        left:150px;
-        top: 10px;
-        font-size: 25px;
-
-
-    }
-    .DOYArea{
-        position: absolute;
-        width: 340px;
-        height: 400px;
-        left:10px;
-        top: 100px;
-        padding:5px;
-        font-family: 'Source Sans Pro';
-        font-size: 5px;
-        color:white;
-        overflow:scroll;
-
-    }
-
-    #csvDownloadButton{
-        position: absolute;
-        top: 70px;
-        left: 250px;
-        font-family:'Source Sans Pro';
-        font-size: 12px;
-        color:white;
-        background:#262A33;
-        border-color:white;
-    }
-
-    table {
-    font-size: 9pt;
+    .box, .timebox, .graphShape{
+        margin-top:10px;
+        border: 3px solid #b4c8bb;
+        border-radius: 5px;
+        box-shadow: 2px 2px 2px gray;
     }
 
 
-
-    .data_img{
-        position: absolute;
-        width : 300px;
-        left:1060px;
-        top: 490px;
-
-    }
-
-
-
-
-    .settingTitle{
-        position: absolute;
-        left:440px;
-        top: 2%;
-        font-size: 25px;
-    }
-
-    .mountainTitle {
-        position: absolute;
-        left: 150px;
-        top: 80px;
-        font-size:20px;
-    }
-
-    .mountainBar{
-        position: absolute;
-        width: 200px;
-        height: 25px;
-        left: 90px;
-        top: 120px;
-        font-family:'Source Sans Pro';
-        font-size:20px;
-        border-radius: 10px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-
-    }
-
-    .startTitle{
-        position: absolute;
-        left: 485px;
-        top:80px;
-        font-size:20px;
-    }
-
-    .start_year{
-        position: absolute;
-        width:150px;
-        height:25px;
-        left: 340px;
-        top:120px;
-        border-radius: 10px;
-        font-family: 'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-    }
-
-    .endTitle{
-        position: absolute;
-        left: 500px;
-        top: 115px;
-    }
-
-    .end_year{
-        position: absolute;
-        width:150px;
-        height:25px;
-        left: 520px;
-        top: 120px;
-        border-radius: 10px;
-        font-family: 'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-    }
-
-    .classTitle{
-        position: absolute;
-        left: 800px;
-        top:80px;
-        font-size:20px;
-    }
-
-    .class_num{
-        position: absolute;
-        left: 740px;
-        top: 120px;
-        width: 200px;
-        height: 25px;
-        border-radius: 10px;
-        font-family:'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
-
-    }
-
-    .curve_fittingTitle{
-        position: absolute;
-        left: 135px;
-        top: 160px;
-        font-size:20px;
-
-    }
-
-    .curve_fit{
-        position: absolute;
-        left: 95px;
-        top: 195px;
+    .box{
+        margin-left:38px;
         width:200px;
-        height:25px;
-        border-radius: 10px;
-        font-family: 'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-color:white;
     }
 
-    .thresholdTitle{
-        position: absolute;
-        left: 475px;
-        top: 160px;
-        font-size:20px;
+    .timebox{
+        width:400px;
+        height:85px;
+        margin-left:30px;
     }
 
-    .threshold{
-        position: absolute;
-        left: 410px;
-        top: 190px;
-        width:200px;
-        height: 30px;
-        font-family: 'Source Sans Pro';
-        font-size:20px;
-        color:white;
-        background-color:#262A33;
-        border-radius: 10px;
-        border-color:white;
+    .selectbar{
+        border-radius: 4px;
+        color:black;
+        background-color:white;
+        border-color:black;
+        width:150px;
+        height:20px;
     }
 
     .graphShape{
-        position: absolute;
-        left: 75%;
-        top: 50%;
-        width:130px;
+        position:relative;
+        left:40px;
+        width:150px;
         height:70px;
-        border-radius: 10px;
-        border-color:white;
-        font-family: 'Source Sans Pro';
-        font-size: 20px;
+    }
 
+    label{
+        font-size:10px;
     }
 
     .submit_btn{
-        position: absolute;
         width:200px;
         height:50px;
-        left:415px;
-        top:240px;
-        background-color:#f2f2eb;
-        border-radius: 10px;
-        border-color:white;
-        color:black;
-        font-family: 'Source Sans Pro';
         font-size:30px;
     }
 
     .submit_btn:hover{
-        background-color:#262A33;
+        background-color: #b4c8bb;
         color: white;
     }
+
+    .rightLayer{
+       width: 440px;
+       height: 740px;
+    }
+
+    .background2 {
+        text-align : center;
+        width: 410px;
+        height: 550px;
+        background: white;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 1px 1px 1px gray;
+    }
+
+    .DOY{
+        position:relative;
+        width: 340px;
+        height: 400px;
+        left:30px;
+        top:30px;
+        padding:5px;
+        font-family: 'Source Sans Pro';
+        font-size: 5px;
+        color:black;
+        overflow:scroll;
+    }
+
+    #csvDownloadButton{
+        position:relative;
+        top: 20px;
+        left: 100px;
+        font-family:'Source Sans Pro';
+        font-size: 12px;
+        color:black;
+        background:white;
+        border-color:gray;
+    }
+
+    table {
+        font-size: 9pt;
+        background : #white;
+        border-color: white;
+        border-collapse: collapse;
+        font-family:'Source Sans Pro';
+    }
+
+    .data_img{
+        position:absolute;
+        width : 250px;
+        left:1190px;
+        top: 510px;
+    }
+
+
