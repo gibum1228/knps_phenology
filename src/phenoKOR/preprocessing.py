@@ -9,8 +9,6 @@ import pandas as pd
 import scipy.io
 from PIL import Image
 
-import analysis
-
 
 # ROOT 정보와 슬래쉬(MIDDLE) 정보 가져오기
 def get_info() -> (str, str):
