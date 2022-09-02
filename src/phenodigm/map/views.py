@@ -22,7 +22,6 @@ import analysis as als
 
 # 전역변수
 ROOT, MIDDLE = preprocessing.get_info()
-knps_final = preprocessing.get_final_data("", "", True)
 property_list = ["knps", "curve_fit", "start_year", "end_year", "class_num", "threshold", "shape",
                  "AorP"]  # 리퀘스트 메소드로 주고 받을 속성명들
 

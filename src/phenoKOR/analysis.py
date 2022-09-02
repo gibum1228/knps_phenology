@@ -72,7 +72,7 @@ def show_graph(ori_db: pd.DataFrame, option: int = 2):
 
 
 # 선택된 만큼의 여러 개의 그래프를 그려주는 메소드
-def show_graphs(ori_db: dict, option: int = 2):
+def show_graphs(ori_db: dict, option: int = 2, df: pd.DataFrame = None):
     value_name = 'EVI' if option < 2 else 'Gcc'
 
     if option == 0:
