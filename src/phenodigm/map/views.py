@@ -95,11 +95,13 @@ def predict(request):
 def phenocam(request):
     db = {}
 
-    for key in property_list:
-        db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
+    if request.method == 'GET':
+        for key in property_list:
+            db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
 
     if request.method == 'POST':
-
+        for key in property_list:
+            db[f"{key}"] = request.POST[f"{key}"] if request.POST.get(f"{key}") else ""
         # if request.FILES:  # input[type=file]로 값이 넘어 왔다면,
         #     request_dict = dict(request.FILES)  # FILES 객체를 딕셔너리로 변환
         #
