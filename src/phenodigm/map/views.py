@@ -72,7 +72,7 @@ def analysis(request):
 
     # shape 값(연속, 연도)에 따라 그래프를 그려줌
     db['graph'] = als.show_graph(db, 0, after_df) if db['shape'] == "1" else als.show_graphs(db, 0, after_df)
-    db['dataframe'] = export_doy(db)
+    db['dataframe'] = export_doy(db, after_df, df_sos)
 
     return render(request, 'map/analysis.html', db)  # 웹 페이지에 값들 뿌려주기
 
@@ -139,77 +139,69 @@ def phenocam(request):
             df['gcc'] = gcc_list
 
         df['date'] = df['date'].astype('str')
-        db['start_year'], db['end_year'] = df['']
-        # 시연용
-        test_df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
-        test_after_df, test_df_sos = preprocessing.curve_fit(test_df, db)
+        test_df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")  # 시연용
 
-        db['graph'] = als.show_graph(db, 2, test_after_df) if db['shape'] == "1" else als.show_graphs(db, 2, test_after_df)
+        db['graph'] = als.show_graph(db, 2, test_df) if db['shape'] == "1" else als.show_graphs(db, 2, test_df)
 
     return render(request, 'map/phenocam.html', db)
 
 
-def export_doy(ori_db):
-    df = preprocessing.get_final_data(ori_db['knps'], ori_db['class_num'])
-    df_sos = pd.read_csv(ROOT + f"{MIDDLE}data{MIDDLE}knps_final_sos.csv")
-    df_sos = df_sos[['year', ori_db['knps'] + '_' + ori_db['class_num']]]
-    df_sos.columns = ['year', 'sos']
+def export_doy(ori_db, df, df_sos):
+    phenophase_date = ''  # 개엽일 임시 저장 문자열
+    phenophase_betw = ''  # 개엽 오차 범위 임시저장 문자열
 
-    phenophase_date = ''
-    phenophase_betw = ''
+    sos = []  # sos 저장할 리스트 생성
+    doy = []  # doy 저장할 리스트 생성
+    betwn = []  # 오차범위 저장할 리스트 생성
 
-    sos = []
-    doy = []
-    betwn = []
-
-    # sos 기준으로 개엽일 추출
+    # sos 기준으로 개엽일 추출 (더블 로지스틱이 옵션이라면)
     if ori_db['curve_fit'] == '1':
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        # df_sos.columns = ['year', 'sos']
-        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_sos.csv") # 시연용
+        df_sos.columns = ['year', 'sos']  # sos데이터프레임 컴럼명 변경
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-            # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2003] # 시연용
-            phenophase_date = (f'{year}년 : {phenophase_doy}일')
-            sos.append(phenophase_date)
+            phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
+            phenophase_date = (f'{year}년 : {phenophase_doy}일')  # 연도-날짜 형태로 구성
+            sos.append(phenophase_date)  # 연도-날짜 개엽일 리스트 추가
 
-    else:
-        df, df_sos = analysis.curve_fit(df, ori_db)
-
+    # 개엽일 추출 코드
     for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-        data = df[df['date'].str[:4] == str(year)]
+        data = df[df['date'].str[:4] == str(year)]  # 1년 개엽일 추출을 위해 1년씩 데이터 프레임 생성
         thresh = np.min(data['avg']) + ((np.max(data['avg']) - np.min(data['avg'])) * (
             float(ori_db["threshold"])))  ##개엽일의 EVI 값
 
         ## 개엽일 사이값 찾기
-        high = data[data['avg'] >= thresh]['date'].iloc[0]
-        low = data.date[[data[data['avg'] >= thresh].index[0] - 8]].to_list()[0]
+        high = data[data['avg'] >= thresh]['date'].iloc[0]  # thresh 보다 큰 EVI 값을 가진 첫 번째 DOY를 High로 지정
+        low = data.date[[data[data['avg'] >= thresh].index[0] - 8]].to_list()[0]  # high보다 8일 적은 DOY를 low로 지정
         high_value = data.avg[data['date'] == high].to_list()[0]  ## high avg 값만 추출
         low_value = data.avg[data['date'] == low].to_list()[0]  ## low avg 값만 추출
-        div_add = (high_value - low_value) / 8
+        div_add = (high_value - low_value) / 8  # low와 high 사이인 8일 간격을 하루씩 맞추기 위해 8로 나누기
 
+        # low value에서 div add을 계속 더하며 thresh보다 커질 경우 정지, 반복문을 통해 a가 몇 번 더해지는지 확인
         for a in range(8):
             if low_value > thresh:
                 break
             else:
                 low_value += div_add
 
+        # low 날짜에 더해진 횟수인 (a-1)일을 더해 구체적인 DOY 추출
         phenophase_doy = format(pd.to_datetime(low) + datetime.timedelta(days=a - 1), '%Y-%m-%d')
+        # 구체적 개엽일 정의
         phenophase_date = format(datetime.datetime.strptime(phenophase_doy, '%Y-%m-%d'), '%j') + '일,' + phenophase_doy
+        # 개엽일의 사이값 정의
         phenophase_betw = (f'{low} ~ {high}')
-        doy.append(phenophase_date)
-        betwn.append(phenophase_betw)
+        doy.append(phenophase_date)  # doy 리스트에 저장
+        betwn.append(phenophase_betw)  # 오차 범위 리스트에 저장
 
-    if ori_db['curve_fit'] == '1':
+    if ori_db['curve_fit'] == '1':  # 더블로지스틱이면 3개의 컬럼 생성하여 데이터프레임으로
         total_DataFrame = pd.DataFrame(columns=['SOS기준 개엽일', '임계치 개엽일', '임계치 오차범위'])
         for i in range(len(doy)):
             total_DataFrame.loc[i] = [sos[i], doy[i], betwn[i]]
-    else:
+    else:  # 나머지 2개의 컬럼 생성하여 데이터 프레임으로
         total_DataFrame = pd.DataFrame(columns=['임계치 개엽일', '임계치 오차범위'])
         for i in range(len(doy)):
             total_DataFrame.loc[i] = [doy[i], betwn[i]]
 
+    # 데이터프레임을 html 태그로 변환(justify:가운데 정렬, indext:인덱스 제거, table_id:테이블 태그 id명 지정)
     html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id='mytable')
 
     return html_DataFrame
@@ -249,18 +241,16 @@ def predict_export_doy(ori_db):
 
     # sos 기준으로 개엽일 추출
     if ori_db['curve_fit'] == '1':
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        # df_sos.columns = ['year', 'sos']
-        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_predict_sos.csv") # 시연용
+        df, df_sos = preprocessing.curve_fit(df, ori_db)
+        df_sos.columns = ['year', 'sos']
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-            # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2022] # 시연용
+            phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
             phenophase_date = (f'{year}년 : {phenophase_doy}일')
             sos.append(phenophase_date)
 
     else:
-        df, df_sos = analysis.curve_fit(df, ori_db)
+        df, df_sos = preprocessing.curve_fit(df, ori_db)
 
     for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
         data = df[df['date'].str[:4] == str(year)]
@@ -301,36 +291,36 @@ def predict_export_doy(ori_db):
 
 
 def open_model_processing(ori_db):
-    #예측 prophet 모델
+    # 예측 prophet 모델
     with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
 
-    #예측일수 지정
-    periods = 4  #2021년도 값이 12월 27에 끝나기 때문에 +4
+    # 예측일수 지정
+    periods = 4  # 2021년도 값이 12월 27에 끝나기 때문에 +4
     for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
 
         if i % 4 == 0:
-            periods += 366 #윤년이면 +366일
+            periods += 366  # 윤년이면 +366일
 
         else:
-            periods += 365 #1년 = +365일
+            periods += 365  # 1년 = +365일
 
-    future = m.make_future_dataframe(periods) #예측을 위한 빈 데이터 프레임 생성
-    forecast = m.predict(future)#예측값 생성
+    future = m.make_future_dataframe(periods)  # 예측을 위한 빈 데이터 프레임 생성
+    forecast = m.predict(future)  # 예측값 생성
 
-    df = forecast[['ds', 'yhat']] #예측 데이터 프레임에서 ds:날짜, yhat:EVI 값 추출하여 새데이터 프레임에 저장
-    df.columns = ['date', 'avg'] #데이터 프레임 컬럼명 변경
-    df['date'] = df['date'].astype('str') #데이트 타입을 str으로 변경
-    doy_list = [] #DOY를 저장을 위한 리스트 생성 - 커브피팅시 인풋값으로 필요
+    df = forecast[['ds', 'yhat']]  # 예측 데이터 프레임에서 ds:날짜, yhat:EVI 값 추출하여 새데이터 프레임에 저장
+    df.columns = ['date', 'avg']  # 데이터 프레임 컬럼명 변경
+    df['date'] = df['date'].astype('str')  # 데이트 타입을 str으로 변경
+    doy_list = []  # DOY를 저장을 위한 리스트 생성 - 커브피팅시 인풋값으로 필요
     for i in range(len(df)):
-        date = df.loc[i, 'date']#날짜추출
-        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j")#doy계산
-        doy_list.append(calculate_doy)#계산된 doy list에 추가
+        date = df.loc[i, 'date']  # 날짜추출
+        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j")  # doy계산
+        doy_list.append(calculate_doy)  # 계산된 doy list에 추가
 
-    df['DOY'] = doy_list #doy 컬럼을 만들고 doy list 값 추가
+    df['DOY'] = doy_list  # doy 컬럼을 만들고 doy list 값 추가
 
-    df = df[(df['date'].str[:4] >= ori_db['start_year'])] #start_year 보다 큰 데이터들 추출
+    df = df[(df['date'].str[:4] >= ori_db['start_year'])]  # start_year 보다 큰 데이터들 추출
 
-    df = df.reset_index(drop=True) #추출된 데이터 인덱스 초기화
+    df = df.reset_index(drop=True)  # 추출된 데이터 인덱스 초기화
 
     return (df)
