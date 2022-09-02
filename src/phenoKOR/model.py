@@ -19,28 +19,23 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이�
 ROOT, MIDDLE = preprocessing.get_info()
 
 
-def fit_arima():
-    pass
-
-
 def fit_prophet():
     df = preprocessing.get_final_data()
+    df = df[['date', 'avg']]
+    df.columns = ['ds', 'y']
 
-    model = Prophet()
-    # model.stan_backend.set_options(newton_fallback=False)
+    model = Prophet(daily_seasonality=True)
+    model.add_seasonality(name='yearly', period=365, fourier_order=10, mode='additive')
+
     model.fit(df, algorithm='Newton')
 
     forecast = 730  # forecast만큼 이후를 예측
     df_forecast = model.make_future_dataframe(periods=forecast)  # 예측할 ds 만들기
     df_forecast = model.predict(df_forecast)  # 비어진 ds만큼 예측
 
-    # 시각화
-    # model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(25, 15))
-    # plt.show()
-
-
-def fit_random_forest():
-    pass
+    model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(30, 10))
+    model.plot_components(df_forecast)
+    plt.show()
 
 
 # LSTM 네트워크 구조
@@ -396,6 +391,8 @@ def show_data_distribution():
 
 
 # 시계열 데이터에서 ACF와 PACF 확인
+# ACF를 통해 정상성 시계열이 아닌 것을 확인 -> 정상 시계열로 만들기 위해 차분 필요성 확인
+# PACF를 통해 AR 모형임을 확인, ARIMA의 p값을 2로 설정
 def show_acf_pacf_plot():
     # 확인할 특정 국립공원 선정
     parks = ['mudeung', 'wolchul', 'juwang', 'taean', 'halla', 'dadohae']
@@ -421,6 +418,3 @@ def show_acf_pacf_plot():
 
         plt.suptitle(f'{park.capitalize()}', fontsize=20)
         plt.show()
-
-# ACF를 통해 정상성 시계열이 아닌 것을 확인 -> 정상 시계열로 만들기 위해 차분 필요성 확인
-# PACF를 통해 AR 모형임을 확인, ARIMA의 p값을 2로 설정
