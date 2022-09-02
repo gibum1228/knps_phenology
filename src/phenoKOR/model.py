@@ -11,7 +11,7 @@ import platform
 import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset  # 텐서데이터셋
 from torch.utils.data import DataLoader  # 데이터로더
-import data_preprocessing as dp
+import preprocessing as dp
 
 # 전역변수
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이토치 gpu로 돌리기
