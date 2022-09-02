@@ -184,18 +184,16 @@ def get_Feb_day(year: int) -> int:
     return day
 
 
-
 # ADF test : 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단함
 # H0 : 단위근이 존재한다. 즉, 정상 시계열이 아니다.
 # H1 : 단위근이 없다. 즉, 정상 시계열이다.
-
 def adf_test(timeseries):
     print("Results of Dickey-Fuller Test:")
     dftest = adfuller(timeseries, autolag="AIC")
     dfoutput = pd.Series(
         dftest[0:4],
         index=[
-            "Test Statistic",   # 검정통계량
+            "Test Statistic",  # 검정통계량
             "p-value",  # p-value
             "#Lags Used",  # 가능한 시차
             "Number of Observations Used",  # 관측 가능 수
@@ -205,6 +203,7 @@ def adf_test(timeseries):
         dfoutput["Critical Value (%s)" % key] = value  # 검정통계량 기준치
     print(dfoutput)
 
+
 # kpss 검정 (Kwiatkowski-Phillips-Schmidt-shin test) : 시계열이 정상성인지 판정하는 방법
 # H0 : 정상 시계열이다.
 # H1 : 정상 시계열이 아니다.
@@ -213,10 +212,9 @@ def kpss_test(timeseries):
     kpsstest = kpss(timeseries, regression="c", nlags="auto")
     kpss_output = pd.Series(
         kpsstest[0:3], index=["Test Statistic",  # 검정통계량
-                              "p-value",   # p-value
+                              "p-value",  # p-value
                               "Lags Used"]  # 가능한 시차
     )
     for key, value in kpsstest[3].items():
         kpss_output["Critical Value (%s)" % key] = value  # 검정통계량 기준치
     print(kpss_output)
-
