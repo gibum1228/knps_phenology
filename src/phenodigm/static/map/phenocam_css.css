@@ -23,7 +23,6 @@
         color:black;
         background: #b4c8bb;
         display: flex;
-        overflow: hidden;
      }
 
      .leftLayer, .middleLayer, .rightLayer{
@@ -36,7 +35,7 @@
 
      .leftLayer{
         width: 100px;
-        height:720px;
+        height:760px;
         background-color:#f7f9fa;
         border-radius:5px;
     }
@@ -91,8 +90,8 @@
     }
 
     .ver{
-        left:10px;
-        top:580px;
+        position:absolute;
+        top:560px;
     }
 
      .middleLayer{

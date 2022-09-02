@@ -15,7 +15,7 @@
         color:black;
         background: #b4c8bb;
         display: flex;
-        overflow: hidden;
+
     }
 
     .leftLayer, .middleLayer, .rightLayer{
@@ -44,7 +44,7 @@
 
     .leftLayer{
         width: 100px;
-        height:720px;
+        height:760px;
         background-color:#f7f9fa;
         border-radius:5px;
     }
@@ -97,8 +97,9 @@
         user-select: none;
     }
     .ver{
-        left:10px;
-        top:580px;
+        position:absolute;
+        left:0px;
+        top:560px;
     }
 
     .middleLayer{
