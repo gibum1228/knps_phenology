@@ -1,21 +1,21 @@
+import numpy as np
+import pandas as pd
 import torch
+import matplotlib.pyplot as plt
+from prophet import Prophet
+from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-from sklearn.metrics import mean_absolute_percentage_error
-from statsmodels.tsa.arima_model import ARIMA
-from prophet import Prophet
-import pandas as pd
-import numpy as np
-import os
-import platform
-import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset  # 텐서데이터셋
 from torch.utils.data import DataLoader  # 데이터로더
+from torch.utils.data import TensorDataset  # 텐서데이터셋
+from statsmodels.tsa.seasonal import seasonal_decompose
+
 import preprocessing
 
 # 전역변수
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이토치 gpu로 돌리기
 ROOT, MIDDLE = preprocessing.get_info()
+
 
 def fit_arima():
     pass
@@ -136,7 +136,8 @@ def fit_LSTM():
     # step, y_count: step개의 데이터로 y_count개의 데이터를 학습
     option = {
         "step": range(5, 11), "y_count": 1, "batch_size": [128, 256], "hidden_dim": range(5, 11),
-        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": preprocessing.get_knps_name_en(), "class_num": range(4),
+        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": preprocessing.get_knps_name_en(),
+        "class_num": range(4),
         "epoch": 500
     }
 
@@ -237,21 +238,22 @@ def R2(y, pred_y):
 def MAPE(y, pred_y):
     return mean_absolute_percentage_error(y, pred_y)
 
+
 def model_compare():
     # 각 모델별 검증지표 데이터 로드
-    data_arima = pd.read_csv(f"{root}data{middle}arima_final.csv", usecols=[3, 4, 5])
-    data_lstm = pd.read_csv(f"{root}data{middle}lstm_final.csv", usecols=[0,1,6,7,8])
-    data_prophet = pd.read_csv(f"{root}data{middle}prophet_final.csv", usecols=[3,4,5])
+    data_arima = pd.read_csv(f"{ROOT}data{MIDDLE}arima_final.csv", usecols=[3, 4, 5])
+    data_lstm = pd.read_csv(f"{ROOT}data{MIDDLE}lstm_final.csv", usecols=[0, 1, 6, 7, 8])
+    data_prophet = pd.read_csv(f"{ROOT}data{MIDDLE}prophet_final.csv", usecols=[3, 4, 5])
 
-    data_prophet['mape'] = data_prophet['mape']/100   # MAPE 스케일 맞추기
+    data_prophet['mape'] = data_prophet['mape'] / 100  # MAPE 스케일 맞추기
 
     # 컬럼명 재설정
     data_arima.columns = ['R2_arima', 'RMSE_arima', 'MAPE_arima']
     data_prophet.columns = ['R2_prophet', 'RMSE_prophet', 'MAPE_prophet']
-    data_lstm.columns = ['code', 'class_num','R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
+    data_lstm.columns = ['code', 'class_num', 'R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
 
     # 검증 지표 합치기
-    final = pd.concat([data_lstm,data_prophet,data_arima],axis=1)
+    final = pd.concat([data_lstm, data_prophet, data_arima], axis=1)
 
     r2 = final[['R2_lstm', 'R2_prophet', 'R2_arima']]
     rmse = final[['RMSE_lstm', 'RMSE_prophet', 'RMSE_arima']]
@@ -261,9 +263,11 @@ def model_compare():
     max_r2 = r2.max(axis=1)
     min_rmse = rmse.min(axis=1)
     min_mape = mape.min(axis=1)
-    max_final = pd.concat([final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
-    max_final.columns =['code', 'class_num', 'max_r2','max_r2_idx','min_rmse','min_rmse_idx', 'min_mape','min_mape_idx']
-    max_final.to_csv(f"{root}data{middle}moelcompare_result.csv")
+    max_final = pd.concat(
+        [final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
+    max_final.columns = ['code', 'class_num', 'max_r2', 'max_r2_idx', 'min_rmse', 'min_rmse_idx', 'min_mape',
+                         'min_mape_idx']
+    max_final.to_csv(f"{ROOT}data{MIDDLE}moelcompare_result.csv")
 
     # Prophet과 Othermodel 비교하기
     r2_other = final[['R2_lstm', 'R2_arima']]
@@ -275,14 +279,18 @@ def model_compare():
     min_mape_other = mape_other.min(axis=1)
 
     # Prophet 모델과 Other 모델 차이값 계산
-    rmse_diff = min_rmse_other-final['RMSE_prophet']
-    mape_diff = min_mape_other-final['MAPE_prophet']
+    rmse_diff = min_rmse_other - final['RMSE_prophet']
+    mape_diff = min_mape_other - final['MAPE_prophet']
 
     # 최종 비교
-    prop_other_final = pd.concat([final['code'], final['class_num'],final['RMSE_prophet'], min_rmse_other,rmse_diff,final['MAPE_prophet'], min_mape_other,mape_diff], axis=1)
-    prop_other_final.columns =['code', 'class_num', 'rmse_prophet','rmse_other','rmse_diff','mape_prophet','mape_other','mape_diff']
+    prop_other_final = pd.concat(
+        [final['code'], final['class_num'], final['RMSE_prophet'], min_rmse_other, rmse_diff, final['MAPE_prophet'],
+         min_mape_other, mape_diff], axis=1)
+    prop_other_final.columns = ['code', 'class_num', 'rmse_prophet', 'rmse_other', 'rmse_diff', 'mape_prophet',
+                                'mape_other', 'mape_diff']
 
-    prop_other_final.to_csv(f"{root}data{middle}final_compare_result.csv")
+    prop_other_final.to_csv(f"{ROOT}data{MIDDLE}final_compare_result.csv")
+
 
 # Arima 학습 및 예측 자동화
 def arima():
@@ -320,4 +328,32 @@ def arima():
             code.append(park)
 
     df = pd.DataFrame({'park': code, 'class': cls, 'R2': R2_list, 'RMSE': RMSE_list, 'MAPE': MAPE_list})
-    df.to_csv(f"{root}data{middle}arima_final.csv")
+    df.to_csv(f"{ROOT}data{MIDDLE}arima_final.csv")
+
+
+def plot_decompose(result):
+    '''
+    시계열 분석 그래프가 너무 작게 보여서 subplot으로 크게 보이게 하는 함수
+    '''
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(15, 8))
+    result.observed.plot(legend=False, ax=ax1)
+    ax1.set_ylabel('Observed')
+    result.trend.plot(legend=False, ax=ax2)
+    ax2.set_ylabel('Trend')
+    result.seasonal.plot(legend=False, ax=ax3)
+    ax3.set_ylabel('Seasonal')
+    result.resid.plot(legend=False, ax=ax4)
+    ax4.set_ylabel('Residual')
+
+
+def serial_compose(data_input):
+    '''
+    시계열 분해를 통해 시계열 데이터의 추세, 계절성, 주기를 확인하고자 한다.
+    '''
+    df = data_input[['date', 'avg']]
+    df.index = df.date
+    ts = df.drop("date", axis=1)
+
+    result = seasonal_decompose(ts, model='additive', period=46)
+
+    plot_decompose(result)
