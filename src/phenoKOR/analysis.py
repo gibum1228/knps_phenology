@@ -10,6 +10,10 @@ from fusioncharts import FusionCharts
 from fusioncharts import FusionTable
 from fusioncharts import TimeSeries
 
+import statsmodels
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.stattools import kpss
+
 warnings.filterwarnings('ignore')
 
 # 전역 변수
@@ -180,14 +184,10 @@ def get_Feb_day(year: int) -> int:
     return day
 
 
-# 시계열 데이터 정상성 확인하기
-# ADF test : 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단함
-# H0 : 단위근이 존재한다. 즉, 정상 시계열이 아니다
-# H1 : 단위근이 없다. 즉, 정상 시계열이다
 
-import statsmodels
-from statsmodels.tsa.stattools import adfuller
-import pandas as pd
+# ADF test : 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단함
+# H0 : 단위근이 존재한다. 즉, 정상 시계열이 아니다.
+# H1 : 단위근이 없다. 즉, 정상 시계열이다.
 
 def adf_test(timeseries):
     print("Results of Dickey-Fuller Test:")
@@ -208,10 +208,6 @@ def adf_test(timeseries):
 # kpss 검정 (Kwiatkowski-Phillips-Schmidt-shin test) : 시계열이 정상성인지 판정하는 방법
 # H0 : 정상 시계열이다.
 # H1 : 정상 시계열이 아니다.
-
-from statsmodels.tsa.stattools import kpss
-import pandas as pd
-
 def kpss_test(timeseries):
     print("Results of KPSS Test:")
     kpsstest = kpss(timeseries, regression="c", nlags="auto")
