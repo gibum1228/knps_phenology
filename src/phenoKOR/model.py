@@ -1,44 +1,41 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import torch
+from prophet import Prophet
+from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-from sklearn.metrics import mean_absolute_percentage_error
-from statsmodels.tsa.arima_model import ARIMA
-from prophet import Prophet
-import pandas as pd
-import numpy as np
-import os
-import platform
-import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset  # 텐서데이터셋
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.seasonal import seasonal_decompose
 from torch.utils.data import DataLoader  # 데이터로더
+from torch.utils.data import TensorDataset  # 텐서데이터셋
+
 import preprocessing
 
 # 전역변수
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이토치 gpu로 돌리기
 ROOT, MIDDLE = preprocessing.get_info()
 
-def fit_arima():
-    pass
-
 
 def fit_prophet():
     df = preprocessing.get_final_data()
+    df = df[['date', 'avg']]
+    df.columns = ['ds', 'y']
 
-    model = Prophet()
-    # model.stan_backend.set_options(newton_fallback=False)
+    model = Prophet(daily_seasonality=True)
+    model.add_seasonality(name='yearly', period=365, fourier_order=10, mode='additive')
+
     model.fit(df, algorithm='Newton')
 
     forecast = 730  # forecast만큼 이후를 예측
     df_forecast = model.make_future_dataframe(periods=forecast)  # 예측할 ds 만들기
     df_forecast = model.predict(df_forecast)  # 비어진 ds만큼 예측
 
-    # 시각화
-    # model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(25, 15))
-    # plt.show()
-
-
-def fit_random_forest():
-    pass
+    model.plot(df_forecast, xlabel="date", ylabel="evi", figsize=(30, 10))
+    model.plot_components(df_forecast)
+    plt.show()
 
 
 # LSTM 네트워크 구조
@@ -136,7 +133,8 @@ def fit_LSTM():
     # step, y_count: step개의 데이터로 y_count개의 데이터를 학습
     option = {
         "step": range(5, 11), "y_count": 1, "batch_size": [128, 256], "hidden_dim": range(5, 11),
-        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": preprocessing.get_knps_name_en(), "class_num": range(4),
+        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": preprocessing.get_knps_name_en(),
+        "class_num": range(4),
         "epoch": 500
     }
 
@@ -237,21 +235,23 @@ def R2(y, pred_y):
 def MAPE(y, pred_y):
     return mean_absolute_percentage_error(y, pred_y)
 
+
 def model_compare():
     # 각 모델별 검증지표 데이터 로드
     data_arima = pd.read_csv(f"{ROOT}data{MIDDLE}arima_final.csv", usecols=[3, 4, 5])
     data_lstm = pd.read_csv(f"{ROOT}data{MIDDLE}lstm_final.csv", usecols=[0,1,6,7,8])
     data_prophet = pd.read_csv(f"{ROOT}data{MIDDLE}prophet_final.csv", usecols=[3,4,5])
 
-    data_prophet['mape'] = data_prophet['mape']/100   # MAPE 스케일 맞추기
+
+    data_prophet['mape'] = data_prophet['mape'] / 100  # MAPE 스케일 맞추기
 
     # 컬럼명 재설정
     data_arima.columns = ['R2_arima', 'RMSE_arima', 'MAPE_arima']
     data_prophet.columns = ['R2_prophet', 'RMSE_prophet', 'MAPE_prophet']
-    data_lstm.columns = ['code', 'class_num','R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
+    data_lstm.columns = ['code', 'class_num', 'R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
 
     # 검증 지표 합치기
-    final = pd.concat([data_lstm,data_prophet,data_arima],axis=1)
+    final = pd.concat([data_lstm, data_prophet, data_arima], axis=1)
 
     r2 = final[['R2_lstm', 'R2_prophet', 'R2_arima']]
     rmse = final[['RMSE_lstm', 'RMSE_prophet', 'RMSE_arima']]
@@ -261,6 +261,7 @@ def model_compare():
     max_r2 = r2.max(axis=1)
     min_rmse = rmse.min(axis=1)
     min_mape = mape.min(axis=1)
+
     max_r2_idx = r2.idxmax(axis=1)
     min_rmse_idx = rmse.idxmin(axis=1)
     min_mape_idx = mape.idxmin(axis=1)
@@ -268,6 +269,7 @@ def model_compare():
     max_final = pd.concat([final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
     max_final.columns =['code', 'class_num', 'max_r2','max_r2_idx','min_rmse','min_rmse_idx', 'min_mape','min_mape_idx']
     max_final.to_csv(f"{ROOT}data{MIDDLE}modelcompare_result.csv")
+
 
     # Prophet과 Othermodel 비교하기
     r2_other = final[['R2_lstm', 'R2_arima']]
@@ -279,14 +281,19 @@ def model_compare():
     min_mape_other = mape_other.min(axis=1)
 
     # Prophet 모델과 Other 모델 차이값 계산
-    rmse_diff = min_rmse_other-final['RMSE_prophet']
-    mape_diff = min_mape_other-final['MAPE_prophet']
+    rmse_diff = min_rmse_other - final['RMSE_prophet']
+    mape_diff = min_mape_other - final['MAPE_prophet']
 
     # 최종 비교
-    prop_other_final = pd.concat([final['code'], final['class_num'],final['RMSE_prophet'], min_rmse_other,rmse_diff,final['MAPE_prophet'], min_mape_other,mape_diff], axis=1)
-    prop_other_final.columns =['code', 'class_num', 'rmse_prophet','rmse_other','rmse_diff','mape_prophet','mape_other','mape_diff']
+    prop_other_final = pd.concat(
+        [final['code'], final['class_num'], final['RMSE_prophet'], min_rmse_other, rmse_diff, final['MAPE_prophet'],
+         min_mape_other, mape_diff], axis=1)
+    prop_other_final.columns = ['code', 'class_num', 'rmse_prophet', 'rmse_other', 'rmse_diff', 'mape_prophet',
+                                'mape_other', 'mape_diff']
 
     prop_other_final.to_csv(f"{ROOT}data{MIDDLE}final_compare_result.csv")
+
+
 
 # Arima 학습 및 예측 자동화
 def arima():
@@ -321,4 +328,99 @@ def arima():
             code.append(knps)
 
     df = pd.DataFrame({'park': code, 'class': cls, 'R2': R2_list, 'RMSE': RMSE_list, 'MAPE': MAPE_list})
+
     df.to_csv(f"{ROOT}data{MIDDLE}arima_final.csv")
+
+
+
+def plot_decompose(result):
+    '''
+    시계열 분석 그래프가 너무 작게 보여서 subplot으로 크게 보이게 하는 함수
+    '''
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(15, 8))
+    result.observed.plot(legend=False, ax=ax1)
+    ax1.set_ylabel('Observed')
+    result.trend.plot(legend=False, ax=ax2)
+    ax2.set_ylabel('Trend')
+    result.seasonal.plot(legend=False, ax=ax3)
+    ax3.set_ylabel('Seasonal')
+    result.resid.plot(legend=False, ax=ax4)
+    ax4.set_ylabel('Residual')
+
+
+def serial_compose(data_input):
+    '''
+    시계열 분해를 통해 시계열 데이터의 추세, 계절성, 주기를 확인하고자 한다.
+    '''
+    df = data_input[['date', 'avg']]
+    df.index = df.date
+    ts = df.drop("date", axis=1)
+
+    result = seasonal_decompose(ts, model='additive', period=46)
+
+    plot_decompose(result)
+
+
+# 전체 및 산림별 데이터 분포 확인하는 메서드
+def show_data_distribution():
+    # 전체 데이터 확인
+    data = preprocessing.get_final_data(all=True)
+    data['date'] = pd.to_datetime(data['date'])  # date 칼럼을 날짜 형식으로 변환
+
+    # 전체 데이터 기술통계량 확인
+    print('Descriptive Statistic of All \n', data['avg'].describe())
+
+    # 전체 데이터에 대한 Boxplot (연도별 EVI 분포 확인)
+    plt.figure(figsize=(10, 7))
+    p = sns.boxplot(y=data['avg'], x=data['date'].dt.year, palette='Spectral')
+    p.set_title('Boxplot of Each Years', fontsize=20)
+    p.set_ylabel('EVI', fontsize=15)
+    p.set_xlabel('Year', fontsize=15)
+    plt.show()
+
+    # 산림별 데이터 특징 확인
+    class_name = ['grassland', 'coniferous', 'broadleaved', 'mixed']
+    for i in range(4):
+        data_class = data[data['class'] == i]  # 특정 산림에 대한 데이터 프레임 생성
+
+        # 특정 산림 기술통계량 확인
+        print(f'Descriptive Statistic of ({class_name[i].capitalize()}) \n', data_class['avg'].describe())
+
+        # 특정 산림 데이터에 대한 Boxplot (연도별 EVI 분포 확인)
+        plt.figure(figsize=(10, 7))
+        p = sns.boxplot(y=data_class['avg'], x=data_class['date'].dt.year, palette='Spectral')
+        p.set_title(f'Boxplot of Each Years ({class_name[i].capitalize()})', fontsize=20)
+        p.set_ylabel('EVI', fontsize=15)
+        p.set_xlabel('Year', fontsize=15)
+        plt.show()
+
+
+# 시계열 데이터에서 ACF와 PACF 확인
+# ACF를 통해 정상성 시계열이 아닌 것을 확인 -> 정상 시계열로 만들기 위해 차분 필요성 확인
+# PACF를 통해 AR 모형임을 확인, ARIMA의 p값을 2로 설정
+def show_acf_pacf_plot():
+    # 확인할 특정 국립공원 선정
+    parks = ['mudeung', 'wolchul', 'juwang', 'taean', 'halla', 'dadohae']
+    for park in parks:
+        data = preprocessing.get_final_data(all=True)
+        data = data[(data['code'] == f'{park}') & (data['class'] == 2)]  # 각 국립공원 중 활엽수림 확인
+        data['date'] = pd.to_datetime(data['date'])  # 시계열 분석을 위해 index를 날짜형으로 변경
+
+        # 2019년 이하 연도를 train 설정
+        train = data[data['date'].dt.year <= 2019]
+        train.index = train['date']
+        train = train.loc[:, 'avg']
+
+        # ACF & PACF Plot
+        fig = plt.figure()
+        fig.subplots_adjust(hspace=0.5)
+
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax2 = fig.add_subplot(2, 1, 2)
+
+        plot_acf(train, ax=ax1)
+        plot_pacf(train, ax=ax2)
+
+        plt.suptitle(f'{park.capitalize()}', fontsize=20)
+        plt.show()
+

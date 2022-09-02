@@ -21,7 +21,7 @@ ROOT, MIDDLE = preprocessing.get_info()
 
 
 # 연속된 하나의 그래프를 그려주는 메소드
-def show_graph(ori_db: pd.DataFrame, option: int = 2,  df: pd.DataFrame = None):
+def show_graph(ori_db: dict, option: int = 2, df: pd.DataFrame = None):
     value_name = "EVI" if option < 2 else "Gcc"  # 식생지수 이름
 
     # 시연용
