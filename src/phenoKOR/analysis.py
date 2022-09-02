@@ -582,9 +582,6 @@ def replace_blank(df: pd.DataFrame, key: str) -> list:
     for i in range((date(int(df['date'].iloc[0][:4]), 12, 31) - last_date).days):
         replace_value_list.append("None")
 
-    print(df["date"])
-    print(replace_value_list.count("None"))
-
     return replace_value_list
 
 
