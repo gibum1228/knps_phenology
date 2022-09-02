@@ -1,7 +1,7 @@
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from statsmodels.tsa.arima_model import ARIMA
-from prophet import Prophet
+from fbprophet import Prophet
 import pandas as pd
 import numpy as np
 
