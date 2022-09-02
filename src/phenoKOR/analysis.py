@@ -21,25 +21,18 @@ ROOT, MIDDLE = preprocessing.get_info()
 
 
 # 연속된 하나의 그래프를 그려주는 메소드
-def show_graph(ori_db: pd.DataFrame, option: int = 2):
+def show_graph(ori_db: pd.DataFrame, option: int = 2,  df: pd.DataFrame = None):
     value_name = "EVI" if option < 2 else "Gcc"  # 식생지수 이름
 
-    if option == 0:  # 분석
-        # df = preprocessing.load_final_data(ori_db['knps'], ori_db['class_num'])  # 데이터 가져오기
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        keyword = "analysis"
-    elif option == 1:  # 예측
-        # df = open_model_processing(ori_db)
-        keyword = "predict"
-
     # 시연용
+    keyword = "analysis" if option == 0 else "predict"
     if option < 2:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
-        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
-                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
-            'date')
+        pass
+        # df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        # df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+        #         (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        #     'date')
     else:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
         ori_db['knps'] = 'jiri'
         ori_db['class_num'] = "sungsamjae"
         ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
@@ -76,28 +69,18 @@ def show_graph(ori_db: pd.DataFrame, option: int = 2):
 
 
 # 선택된 만큼의 여러 개의 그래프를 그려주는 메소드
-def show_graphs(ori_db: dict, option: int = 2):
+def show_graphs(ori_db: dict, option: int = 2, df: pd.DataFrame = None):
     value_name = 'EVI' if option < 2 else 'Gcc'
 
-    if option == 0:
-        # df = pd.read_csv(ROOT + f"{MIDDLE}data{MIDDLE}knps_final.csv")
-        # df = df[df['class'] == int(ori_db['class_num'])]
-        # df = df[df['code'] == ori_db['knps']]
-        #
-        # df, df_sos = pk.curve_fit(df, ori_db)
-        keyword = "analysis"
-    elif option == 1:
-        # df = open_model_processing(ori_db) # curve fitting된 데이터 가져오기
-        keyword = "predict"
-
     # 시연용
+    keyword = "analysis" if option == 0 else "predict"
     if option < 2:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
-        df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
-                (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
-            'date')
+        pass
+        # df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_{keyword}.csv")
+        # df = df[(df["code"] == ori_db["knps"]) & (df["class"] == int(ori_db["class_num"])) &
+        #         (df['date'].str[:4] >= ori_db["start_year"]) & (df['date'].str[:4] <= ori_db["end_year"])].sort_values(
+        #     'date')
     else:
-        df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
         ori_db['knps'] = 'jiri'
         ori_db['class_num'] = "sungsamjae"
         ori_db['start_year'], ori_db['end_year'] = "2019", "2019"
@@ -184,18 +167,16 @@ def get_Feb_day(year: int) -> int:
     return day
 
 
-
 # ADF test : 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단함
 # H0 : 단위근이 존재한다. 즉, 정상 시계열이 아니다.
 # H1 : 단위근이 없다. 즉, 정상 시계열이다.
-
 def adf_test(timeseries):
     print("Results of Dickey-Fuller Test:")
     dftest = adfuller(timeseries, autolag="AIC")
     dfoutput = pd.Series(
         dftest[0:4],
         index=[
-            "Test Statistic",   # 검정통계량
+            "Test Statistic",  # 검정통계량
             "p-value",  # p-value
             "#Lags Used",  # 가능한 시차
             "Number of Observations Used",  # 관측 가능 수
@@ -205,6 +186,7 @@ def adf_test(timeseries):
         dfoutput["Critical Value (%s)" % key] = value  # 검정통계량 기준치
     print(dfoutput)
 
+
 # kpss 검정 (Kwiatkowski-Phillips-Schmidt-shin test) : 시계열이 정상성인지 판정하는 방법
 # H0 : 정상 시계열이다.
 # H1 : 정상 시계열이 아니다.
@@ -213,10 +195,9 @@ def kpss_test(timeseries):
     kpsstest = kpss(timeseries, regression="c", nlags="auto")
     kpss_output = pd.Series(
         kpsstest[0:3], index=["Test Statistic",  # 검정통계량
-                              "p-value",   # p-value
+                              "p-value",  # p-value
                               "Lags Used"]  # 가능한 시차
     )
     for key, value in kpsstest[3].items():
         kpss_output["Critical Value (%s)" % key] = value  # 검정통계량 기준치
     print(kpss_output)
-

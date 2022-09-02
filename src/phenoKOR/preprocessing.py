@@ -24,7 +24,7 @@ def get_info() -> (str, str):
 
 
 # 최종 통합 데이터 파일에서 전체 데이터 또는 원하는 국립공원 산림의 데이터 로드하기
-def get_final_data(knps: str = "", class_num: str = "", all: bool = False) -> pd.DataFrame:
+def get_final_data(db: dict = None, all: bool = False) -> pd.DataFrame:
     df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final.csv")  # csv 파일 로드
 
     # 전체 데이터를 추출할지 여부 판단
@@ -32,7 +32,9 @@ def get_final_data(knps: str = "", class_num: str = "", all: bool = False) -> pd
         return df  # 전체 데이터 반환
     else:
         # 조건에 맞는 데이터만 반환
-        return df[(df["code"] == knps) & (df["class"] == int(class_num))].sort_values('date')
+        return df[(df["code"] == db['knps']) & (df["class"] == int(db['class_num']))
+                  & (df['date'].str[:4] >= db["start_year"]) & (df['date'].str[:4] <= db["end_year"])].sort_values(
+            'date')
 
 
 # mat 파일에서 마스크 이미지 생성하기
@@ -144,19 +146,19 @@ def get_cc(img: npt.NDArray) -> (float, float):
     return red_cc, green_cc
 
 
-# 다양한 curve fitting 알고리즘을 key으로 선택 가능
-def curve_fit(y, ori_db: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
+# 다양한 curve fitting 알고리즘을 선택해 데이터 전처리하기
+def curve_fit(df: pd.DataFrame, ori_db: dict) -> (pd.DataFrame, pd.DataFrame):
     start_year = int(ori_db['start_year'])
     end_year = int(ori_db['end_year'])
 
     if ori_db['curve_fit'] == '1':
-        data_final, sos_df = double_logistic_func(y, start_year, end_year, ori_db)
+        after_df, df_sos = double_logistic_func(df, start_year, end_year, ori_db)
     elif ori_db['curve_fit'] == '2':
-        data_final, sos_df = savitzky_golay_func(y, start_year, end_year, ori_db)
+        after_df, df_sos = savitzky_golay_func(df, start_year, end_year, ori_db)
     elif ori_db['curve_fit'] == '3':
-        data_final, sos_df = gaussian_func(y, start_year, end_year, ori_db)
+        after_df, df_sos = gaussian_func(df, start_year, end_year, ori_db)
 
-    return data_final, sos_df
+    return after_df, df_sos
 
 
 # Double Logistic 함수 정의

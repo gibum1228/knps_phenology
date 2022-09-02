@@ -22,7 +22,6 @@ import analysis as als
 
 # 전역변수
 ROOT, MIDDLE = preprocessing.get_info()
-knps_final = preprocessing.get_final_data("", "", True)
 property_list = ["knps", "curve_fit", "start_year", "end_year", "class_num", "threshold", "shape",
                  "AorP"]  # 리퀘스트 메소드로 주고 받을 속성명들
 
@@ -67,12 +66,13 @@ def analysis(request):
             # 값이 넘어 오지 않았다면 "", 값이 넘어 왔다면 해당하는 값을 db에 넣어줌
             db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""  # 삼항 연산자
 
-    # shape 값(연속, 연도)에 따라 그래프를 그려줌
-    db['graph'] = als.show_graph(db, 0) if db['shape'] == "1" else als.show_graphs(db, 0)
-    # *shape는 default: 1임
-    db['dataframe'] = export_doy(db)
+    # 데이터 가져와서 curve_fitting 하기
+    before_df = preprocessing.get_final_data(db)
+    after_df, df_sos = preprocessing.curve_fit(before_df, db)
 
-    # *threshold는 default : 50
+    # shape 값(연속, 연도)에 따라 그래프를 그려줌
+    db['graph'] = als.show_graph(db, 0, after_df) if db['shape'] == "1" else als.show_graphs(db, 0, after_df)
+    db['dataframe'] = export_doy(db)
 
     return render(request, 'map/analysis.html', db)  # 웹 페이지에 값들 뿌려주기
 
@@ -85,7 +85,10 @@ def predict(request):
         for key in property_list:
             db[f"{key}"] = request.GET[f"{key}"] if request.GET.get(f"{key}") else ""
 
-    db['graph'] = als.show_graph(db, 1) if db['shape'] == "1" else als.show_graphs(db, 1)
+    # 데이터 가져와서 curve_fitting 하기
+    df = open_model_processing(db)
+
+    db['graph'] = als.show_graph(db, 1, df) if db['shape'] == "1" else als.show_graphs(db, 1, df)
     db['dataframe'] = predict_export_doy(db)
 
     return render(request, 'map/predict.html', db)
@@ -103,39 +106,45 @@ def phenocam(request):
     if request.method == 'POST':
         for key in property_list:
             db[f"{key}"] = request.POST[f"{key}"] if request.POST.get(f"{key}") else ""
-        # if request.FILES:  # input[type=file]로 값이 넘어 왔다면,
-        #     request_dict = dict(request.FILES)  # FILES 객체를 딕셔너리로 변환
-        #
-        #     # 이미지 가져오기
-        #     if request_dict['imgs']:
-        #         # 바이트 데이터에서 파일 정보를 추출하고 이미지 데이터로 변환
-        #         df, imgs = preprocessing.get_image_for_web(request_dict['imgs'])
-        #
-        #         # 마스크 이미지 가져오기
-        #         if request_dict['img_mask']:
-        #             img_mask = preprocessing.byte2img(request_dict['img_mask'][0].read())
-        #             img_mask = cv.resize(img_mask, (imgs[0].shape[1], imgs[0].shape[0]))  # 캔버스 그릴 때 축소해서 원본 크기로 맞춤
-        #             new_mask = np.where(img_mask == 255, img_mask, 0)  # 직접 그린 관심 영역 제외하고 검정색(0)으로 만들기
-        #
-        #     # 관심 영역 이미지 리스트
-        #     imgs_roi = []
-        #     for img in imgs:
-        #         img_roi = preprocessing.get_roi(img, new_mask)  # 관심 영역 구하기
-        #         imgs_roi.append(img_roi)
-        #     imgs_roi = np.array(imgs_roi)
-        #
-        #     # 관심 영역 이미지에 대한 rcc, gcc 값 구하기
-        #     rcc_list, gcc_list = [], []
-        #     for img_roi in imgs_roi:
-        #         rcc, gcc = preprocessing.get_cc(img_roi)
-        #
-        #         rcc_list.append(rcc)
-        #         gcc_list.append(gcc)
-        #     # list로 열 추가
-        #     df['rcc'] = rcc_list
-        #     df['gcc'] = gcc_list
+        if request.FILES:  # input[type=file]로 값이 넘어 왔다면,
+            request_dict = dict(request.FILES)  # FILES 객체를 딕셔너리로 변환
 
-        db['graph'] = als.show_graph(db) if db['shape'] == "1" else als.show_graphs(db)
+            # 이미지 가져오기
+            if request_dict['imgs']:
+                # 바이트 데이터에서 파일 정보를 추출하고 이미지 데이터로 변환
+                df, imgs = preprocessing.get_image_for_web(request_dict['imgs'])
+
+                # 마스크 이미지 가져오기
+                if request_dict['img_mask']:
+                    img_mask = preprocessing.byte2img(request_dict['img_mask'][0].read())
+                    img_mask = cv.resize(img_mask, (imgs[0].shape[1], imgs[0].shape[0]))  # 캔버스 그릴 때 축소해서 원본 크기로 맞춤
+                    new_mask = np.where(img_mask == 255, img_mask, 0)  # 직접 그린 관심 영역 제외하고 검정색(0)으로 만들기
+
+            # 관심 영역 이미지 리스트
+            imgs_roi = []
+            for img in imgs:
+                img_roi = preprocessing.get_roi(img, new_mask)  # 관심 영역 구하기
+                imgs_roi.append(img_roi)
+            imgs_roi = np.array(imgs_roi)
+
+            # 관심 영역 이미지에 대한 rcc, gcc 값 구하기
+            rcc_list, gcc_list = [], []
+            for img_roi in imgs_roi:
+                rcc, gcc = preprocessing.get_cc(img_roi)
+
+                rcc_list.append(rcc)
+                gcc_list.append(gcc)
+            # list로 열 추가
+            df['rcc'] = rcc_list
+            df['gcc'] = gcc_list
+
+        df['date'] = df['date'].astype('str')
+        db['start_year'], db['end_year'] = df['']
+        # 시연용
+        test_df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}jiri011_2019_final.csv")
+        test_after_df, test_df_sos = preprocessing.curve_fit(test_df, db)
+
+        db['graph'] = als.show_graph(db, 2, test_after_df) if db['shape'] == "1" else als.show_graphs(db, 2, test_after_df)
 
     return render(request, 'map/phenocam.html', db)
 
@@ -157,11 +166,11 @@ def export_doy(ori_db):
     if ori_db['curve_fit'] == '1':
         # df, df_sos = pk.curve_fit(df, ori_db)
         # df_sos.columns = ['year', 'sos']
-        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_sos.csv")
+        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_sos.csv") # 시연용
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
             # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2003]
+            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2003] # 시연용
             phenophase_date = (f'{year}년 : {phenophase_doy}일')
             sos.append(phenophase_date)
 
@@ -206,52 +215,16 @@ def export_doy(ori_db):
     return html_DataFrame
 
 
-def open_model_processing(ori_db):
+def predict_export_doy(ori_db):
     with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
         m = model_from_json(fin.read())
 
     periods = 4
     for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-
-        if i % 4 == 1:
+        if i % 4 == 0 or i % 100 == 0:
             periods += 366
-
         else:
             periods += 365
-
-    future = m.make_future_dataframe(periods)
-    forecast = m.predict(future)
-
-    df = forecast[['ds', 'yhat']]
-    df.columns = ['date', 'avg']
-    df['date'] = df['date'].astype('str')
-    doy_list = []
-    for i in range(len(df)):
-        date = df.loc[i, 'date']
-        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j")
-        doy_list.append(calculate_doy)
-
-    df['DOY'] = doy_list
-
-    # df, df_sos = phenoKOR.curve_fit(df, ori_db)
-
-    df = df[(df['date'].str[:4] >= ori_db['start_year'])]
-
-    df = df.reset_index(drop=True)
-
-    return (df)
-
-
-def predict_export_doy(ori_db):
-    with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
-        m = model_from_json(fin.read())
-
-    periods = 0
-    for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
-        if i % 4 == 0:
-            periods += 370
-        else:
-            periods += 369
 
     future = m.make_future_dataframe(periods)
     forecast = m.predict(future)
@@ -278,11 +251,11 @@ def predict_export_doy(ori_db):
     if ori_db['curve_fit'] == '1':
         # df, df_sos = pk.curve_fit(df, ori_db)
         # df_sos.columns = ['year', 'sos']
-        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_predict_sos.csv")
+        df_sos = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final_predict_sos.csv") # 시연용
 
         for year in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
             # phenophase_doy = df_sos[df_sos['year'] == year]['sos'].to_list()[0]  # sos 스칼라 값
-            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2022]
+            phenophase_doy = df_sos[f"{ori_db['knps']}_{ori_db['class_num']}"].iloc[year - 2022] # 시연용
             phenophase_date = (f'{year}년 : {phenophase_doy}일')
             sos.append(phenophase_date)
 
@@ -296,7 +269,7 @@ def predict_export_doy(ori_db):
 
         ## 개엽일 사이값 찾기
         high = data[data['avg'] >= thresh]['date'].iloc[0]
-        low = data.date[[data[data['avg'] >= thresh].index[0] - 8]].to_list()[0]
+        low = data.date[[data[data['avg'] >= thresh].index[0] - 1]].to_list()[0]
         high_value = data.avg[data['date'] == high].to_list()[0]  ## high avg 값만 추출
         low_value = data.avg[data['date'] == low].to_list()[0]  ## low avg 값만 추출
         div_add = (high_value - low_value) / 8
@@ -325,3 +298,39 @@ def predict_export_doy(ori_db):
 
     html_DataFrame = total_DataFrame.to_html(justify='center', index=False, table_id='mytable')
     return html_DataFrame
+
+
+def open_model_processing(ori_db):
+    #예측 prophet 모델
+    with open(ROOT + f"{MIDDLE}data{MIDDLE}model{MIDDLE}{ori_db['knps']}_{ori_db['class_num']}", 'r') as fin:
+        m = model_from_json(fin.read())
+
+    #예측일수 지정
+    periods = 4  #2021년도 값이 12월 27에 끝나기 때문에 +4
+    for i in range(int(ori_db['start_year']), int(ori_db['end_year']) + 1):
+
+        if i % 4 == 0:
+            periods += 366 #윤년이면 +366일
+
+        else:
+            periods += 365 #1년 = +365일
+
+    future = m.make_future_dataframe(periods) #예측을 위한 빈 데이터 프레임 생성
+    forecast = m.predict(future)#예측값 생성
+
+    df = forecast[['ds', 'yhat']] #예측 데이터 프레임에서 ds:날짜, yhat:EVI 값 추출하여 새데이터 프레임에 저장
+    df.columns = ['date', 'avg'] #데이터 프레임 컬럼명 변경
+    df['date'] = df['date'].astype('str') #데이트 타입을 str으로 변경
+    doy_list = [] #DOY를 저장을 위한 리스트 생성 - 커브피팅시 인풋값으로 필요
+    for i in range(len(df)):
+        date = df.loc[i, 'date']#날짜추출
+        calculate_doy = datetime.datetime(int(date[:4]), int(date[5:7]), int(date[8:10])).strftime("%j")#doy계산
+        doy_list.append(calculate_doy)#계산된 doy list에 추가
+
+    df['DOY'] = doy_list #doy 컬럼을 만들고 doy list 값 추가
+
+    df = df[(df['date'].str[:4] >= ori_db['start_year'])] #start_year 보다 큰 데이터들 추출
+
+    df = df.reset_index(drop=True) #추출된 데이터 인덱스 초기화
+
+    return (df)

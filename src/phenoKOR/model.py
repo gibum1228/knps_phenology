@@ -11,19 +11,18 @@ import platform
 import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset  # 텐서데이터셋
 from torch.utils.data import DataLoader  # 데이터로더
-import preprocessing as dp
+import preprocessing
 
 # 전역변수
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 파이토치 gpu로 돌리기
-middle = "/" if platform.system() == "Darwin" else "\\" # 운영체제에 따라 슬래쉬 설정
-root = os.getcwd() + middle
+ROOT, MIDDLE = preprocessing.get_info()
 
 def fit_arima():
     pass
 
 
 def fit_prophet():
-    df = dp.load_final_data()
+    df = preprocessing.get_final_data()
 
     model = Prophet()
     # model.stan_backend.set_options(newton_fallback=False)
@@ -133,12 +132,11 @@ def split_data(df, step, y_count):
 def fit_LSTM():
     save_df = pd.DataFrame(columns=["code", "class_num", "step", "batch_size", "hidden_dim",
                                     "dropout", "layer", "r^2", "rmse", "mape"])
-    '''
-    step, y_count: step개의 데이터로 y_count개의 데이터를 학습
-    '''
+
+    # step, y_count: step개의 데이터로 y_count개의 데이터를 학습
     option = {
         "step": range(5, 11), "y_count": 1, "batch_size": [128, 256], "hidden_dim": range(5, 11),
-        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": dp.get_knps_name_EN(), "class_num": range(4),
+        "dropout": [0.3, 0.4, 0.5], "layer": [1, 2], "knps_name": preprocessing.get_knps_name_en(), "class_num": range(4),
         "epoch": 500
     }
 
@@ -149,7 +147,13 @@ def fit_LSTM():
                     for hidden_dim in option["hidden_dim"]:
                         for dropout in option["dropout"]:
                             for layer in option["layer"]:
-                                df = dp.load_final_data(knps_name, class_num)
+                                db = {
+                                    "knps": knps_name,
+                                    "class_num": class_num,
+                                    "start_year": "2003",
+                                    "end_year": "2021"
+                                }
+                                df = preprocessing.get_final_data(db)
 
                                 # 학습 데이터(03-19)와 테스트 데이터(20-21) 분리
                                 df_train = (df[df['date'] < "2020-01-01"])['avg'].values
@@ -203,7 +207,7 @@ def fit_LSTM():
                                 save_df.iloc[len(save_df)] = [knps_name, class_num, step, batch_size, hidden_dim,
                                                               dropout, layer, r2, rmse, mape]
 
-    save_df.to_csv(f"{root}data{middle}lst_final.csv", index=False)
+    save_df.to_csv(f"{ROOT}data{MIDDLE}lstm_final.csv", index=False)
     # plt.figure(figsize=(8, 3))
     # plt.plot(np.arange(len(pred)), pred, color='red', label="pred")
     # plt.plot(np.arange(len(test_y_tensor)), test_y_tensor.cpu(), color='blue', label="true")
