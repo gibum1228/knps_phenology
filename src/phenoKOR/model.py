@@ -233,51 +233,87 @@ def R2(y, pred_y):
 def MAPE(y, pred_y):
     return mean_absolute_percentage_error(y, pred_y)
 
-# 각 모델별 검증지표 데이터 로드
-data_arima = pd.read_csv('./data/arima_final.csv', usecols=[3,4,5])
-data_lstm = pd.read_csv('./data/lstm_final.csv', usecols=[0,1,6,7,8])
-data_prophet = pd.read_csv('./data/prophet_final.csv', usecols=[3,4,5])
+def model_compare():
+    # 각 모델별 검증지표 데이터 로드
+    data_arima = pd.read_csv(f"{root}data{middle}arima_final.csv", usecols=[3, 4, 5])
+    data_lstm = pd.read_csv(f"{root}data{middle}lstm_final.csv", usecols=[0,1,6,7,8])
+    data_prophet = pd.read_csv(f"{root}data{middle}prophet_final.csv", usecols=[3,4,5])
 
-data_prophet['mape'] = data_prophet['mape']/100   # MAPE 스케일 맞추기
+    data_prophet['mape'] = data_prophet['mape']/100   # MAPE 스케일 맞추기
 
-# 컬럼명 재설정
-data_arima.columns = ['R2_arima', 'RMSE_arima', 'MAPE_arima']
-data_prophet.columns = ['R2_prophet', 'RMSE_prophet', 'MAPE_prophet']
-data_lstm.columns = ['code', 'class_num','R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
+    # 컬럼명 재설정
+    data_arima.columns = ['R2_arima', 'RMSE_arima', 'MAPE_arima']
+    data_prophet.columns = ['R2_prophet', 'RMSE_prophet', 'MAPE_prophet']
+    data_lstm.columns = ['code', 'class_num','R2_lstm', 'RMSE_lstm', 'MAPE_lstm']
 
-# 검증 지표 합치기
-final = pd.concat([data_lstm,data_prophet,data_arima],axis=1)
+    # 검증 지표 합치기
+    final = pd.concat([data_lstm,data_prophet,data_arima],axis=1)
 
-r2 = final[['R2_lstm', 'R2_prophet', 'R2_arima']]
-rmse = final[['RMSE_lstm', 'RMSE_prophet', 'RMSE_arima']]
-mape = final[['MAPE_lstm', 'MAPE_prophet', 'MAPE_arima']]
+    r2 = final[['R2_lstm', 'R2_prophet', 'R2_arima']]
+    rmse = final[['RMSE_lstm', 'RMSE_prophet', 'RMSE_arima']]
+    mape = final[['MAPE_lstm', 'MAPE_prophet', 'MAPE_arima']]
 
-# 최적의 지표 선택
-max_r2 = r2.max(axis=1)
-min_rmse = rmse.min(axis=1)
-min_mape = mape.min(axis=1)
+    # 최적의 지표 선택
+    max_r2 = r2.max(axis=1)
+    min_rmse = rmse.min(axis=1)
+    min_mape = mape.min(axis=1)
+    max_final = pd.concat([final['code'], final['class_num'], max_r2, max_r2_idx, min_rmse, min_rmse_idx, min_mape, min_mape_idx], axis=1)
+    max_final.columns =['code', 'class_num', 'max_r2','max_r2_idx','min_rmse','min_rmse_idx', 'min_mape','min_mape_idx']
+    max_final.to_csv(f"{root}data{middle}moelcompare_result.csv")
 
-max_final = pd.concat([final['code'], final['class_num'], max_r2, max_r2_idx,min_rmse,min_rmse_idx, min_mape,min_mape_idx], axis=1)
-max_final.columns =['code', 'class_num', 'max_r2','max_r2_idx','min_rmse','min_rmse_idx', 'min_mape','min_mape_idx']
-max_final.to_csv('./moelcompare_result.csv')
+    # Prophet과 Othermodel 비교하기
+    r2_other = final[['R2_lstm', 'R2_arima']]
+    rmse_other = final[['RMSE_lstm', 'RMSE_arima']]
+    mape_other = final[['MAPE_lstm', 'MAPE_arima']]
 
-# Prophet과 othermodel 비교하기
-r2_other = final[['R2_lstm', 'R2_arima']]
-rmse_other = final[['RMSE_lstm', 'RMSE_arima']]
-mape_other = final[['MAPE_lstm', 'MAPE_arima']]
+    # Other 모델에서 가장 작은 값 선택
+    min_rmse_other = rmse_other.min(axis=1)
+    min_mape_other = mape_other.min(axis=1)
 
-# Other 모델에서 가장 작은 값 선택
-min_rmse_other = rmse_other.min(axis=1)
-min_mape_other = mape_other.min(axis=1)
-min_rmse_other_idx = rmse_other.idxmin(axis=1)
-min_map_other_idx = mape_other.idxmin(axis=1)
+    # Prophet 모델과 Other 모델 차이값 계산
+    rmse_diff = min_rmse_other-final['RMSE_prophet']
+    mape_diff = min_mape_other-final['MAPE_prophet']
 
-# Prophet 모델과 Other 모델 차이값 계산
-rmse_diff = min_rmse_other-final['RMSE_prophet']
-mape_diff = min_mape_other-final['MAPE_prophet']
+    # 최종 비교
+    prop_other_final = pd.concat([final['code'], final['class_num'],final['RMSE_prophet'], min_rmse_other,rmse_diff,final['MAPE_prophet'], min_mape_other,mape_diff], axis=1)
+    prop_other_final.columns =['code', 'class_num', 'rmse_prophet','rmse_other','rmse_diff','mape_prophet','mape_other','mape_diff']
 
-# 최종 비교
-prop_other_final = pd.concat([final['code'], final['class_num'],final['RMSE_prophet'], min_rmse_other,rmse_diff,final['MAPE_prophet'], min_mape_other,mape_diff], axis=1)
-prop_other_final.columns =['code', 'class_num', 'rmse_prophet','rmse_other','rmse_diff','mape_prophet','mape_other','mape_diff']
+    prop_other_final.to_csv(f"{root}data{middle}final_compare_result.csv")
 
-prop_other_final.to_csv('./finalcompare_result.csv')
+# Arima 학습 및 예측 자동화
+def arima():
+    park_type = ['bukhan', 'byeonsan', 'chiak', 'dadohae', 'deogyu', 'gaya', 'gyeongju',
+                 'gyeryong', 'halla', 'hallyeo', 'jiri', 'juwang', 'mudeung', 'naejang',
+                 'odae', 'seorak', 'sobaek', 'songni', 'taean', 'taebaek', 'wolchul', 'worak']
+
+    R2_list = []
+    RMSE_list = []
+    MAPE_list = []
+    cls = []
+    code = []
+
+    for park in park_type:
+        for i in range(4):
+            data = load_data(park, i)
+            data['date'] = pd.to_datetime(data['date'])
+
+            # 학습 데이터(03-19)와 테스트 데이터(20-21) 분리
+            train_data = data[data['date'] <= '2020-01-01']
+            test_data = data[data['date'] >= '2020-01-01']
+
+            # ARIMA MODEL
+            model = pm.ARIMA(order=(2, 1, 0),
+                             seasonal_order=(2, 1, 0, 46),
+                             scoring='mse'
+                             )
+            model_fit = model.fit(train_data['avg'])
+            model_predict = model_fit.predict(len(test_data['avg']))
+
+            R2_list.append(R2(test_data['avg'], model_predict))
+            RMSE_list.append(RMSE(test_data['avg'], model_predict))
+            MAPE_list.append(MAPE(test_data['avg'], model_predict))
+            cls.append(i)
+            code.append(park)
+
+    df = pd.DataFrame({'park': code, 'class': cls, 'R2': R2_list, 'RMSE': RMSE_list, 'MAPE': MAPE_list})
+    df.to_csv(f"{root}data{middle}arima_final.csv")
