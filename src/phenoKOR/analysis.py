@@ -462,7 +462,8 @@ def show_graph(ori_db: pd.DataFrame, option: int = 2):
               {"name": "value", "type": "number"}]  # 하나의 data 구조
 
     for i in range(len(df)):  # data에 값 채우기
-        data.append([df['date'].iloc[i], value_name, df['avg' if option < 2 else 'gcc'].iloc[i]])  # schema 형태에 맞게 데이터 추가
+        data.append(
+            [df['date'].iloc[i], value_name, df['avg' if option < 2 else 'gcc'].iloc[i]])  # schema 형태에 맞게 데이터 추가
 
         # 고정형 카메라라면 Rcc 값도 추가
         if option >= 2: data.append([df['date'].iloc[i], "Rcc", df['rcc'].iloc[i]])
@@ -475,7 +476,7 @@ def show_graph(ori_db: pd.DataFrame, option: int = 2):
     timeSeries.AddAttribute('chart',
                             f'{{"exportEnabled": "1", "exportfilename": "{ori_db["knps"]}_{ori_db["class_num"]}_{ori_db["start_year"]}_{ori_db["end_year"]}"}}')
     timeSeries.AddAttribute('subcaption', f'{{"text":"class_num : {ori_db["class_num"]}"}}')
-    timeSeries.AddAttribute('series', '"Type"') # type으로 값 나누기
+    timeSeries.AddAttribute('series', '"Type"')  # type으로 값 나누기
     timeSeries.AddAttribute('yaxis', [{"plot": {"value": "value"}, "title": "value"}])
 
     width = 950 if option < 2 else 680
