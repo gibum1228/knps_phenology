@@ -87,9 +87,9 @@
 리턴값 : (list)   
 
 ## curve_fit
-매개변수 :    
-기능 :    
-리턴값 :    
+매개변수 : (df : pd.DataFrame, ori_db : dict)    
+기능 : 적용할 Curve Fitting 방법으로 연산 후 결과 리턴하는 메소드   
+리턴값 : (pd.DataFrame, pd.DataFrame)   
 
 ## double_logistic_func
 매개변수 : (input_data : pd.DataFrame, start_year : integer, end_year : integer, ori_db : dict)    
