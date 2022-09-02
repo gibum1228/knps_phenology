@@ -20,7 +20,7 @@ def get_info() -> (str, str):
 
 
 # 최종 통합 데이터 파일에서 전체 데이터 또는 원하는 국립공원 산림의 데이터 로드하기
-def get_final_data(knps: str, class_num: str, all: bool = False) -> pd.DataFrame:
+def get_final_data(knps: str = "", class_num: str = "", all: bool = False) -> pd.DataFrame:
     df = pd.read_csv(f"{ROOT}{MIDDLE}data{MIDDLE}knps_final.csv")  # csv 파일 로드
 
     # 전체 데이터를 추출할지 여부 판단

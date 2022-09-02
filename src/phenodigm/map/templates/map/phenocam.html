@@ -14,7 +14,7 @@
             $("select[name=knps]").val("{{ knps }}");
             $("select[name=class_num]").val("{{ class_num }}");
             $("select[name=curve_fit]").val("{{ curve_fit }}");
-            $("input[name=threshold]").val("{{ threshold }}");
+            $("select[name=threshold]").val("{{ threshold }}");
             $("#shape" + "{{ shape }}").prop("checked", true);
         });
     </script>
@@ -40,7 +40,7 @@
                 <a class="predict_btn" href="/predict/?knps=jiri&start_year=2022&end_year=2022&class_num=0&curve_fit=1&threshold=0.4&shape=1&AorP=P">예측</a>
             </div>
 
-            <div class="phenocam_area" onclick="location.href='/phenocam/?curve_fit=1&shape=1';" style="background-color:#b4c8bb; border-radius: 1px;">
+            <div class="phenocam_area" onclick="location.href='/phenocam/?curve_fit=1&shape=1&threshold=0.4';" style="background-color:#b4c8bb; border-radius: 1px;">
                 <img class="phenocam_img" src="{%static 'map/camera.png'%}" alt="My Image" width="30">
                 <a class="phenocam_btn" href="/phenocam/">카메라</a>
             </div>
@@ -165,13 +165,13 @@
                 <b class="settingTitle">설정</b>
                 <form method="get" action="/phenocam/" id="optionForm">
                     <br><b class="curve_fittingTitle">curve_fitting</b>
-                    <select class="curve_fit" name="curve_fit">
+                    <select class="curve_fit" name="curve_fit" form="send_img">
                         <option value="1" selected>다중 로지스틱 함수</option>
                         <option value="3">Savitzly-Golay</option>
                         <option value="4">가우시안</option>
                     </select>
                     <b class="thresholdTitle">임계치(%)</b>
-                    <select class="threshold" name="threshold">
+                    <select class="threshold" name="threshold" form="send_img">
                         <option value="0.4">40%</option>
                         <option value="0.5">50%</option>
                     </select>
@@ -179,11 +179,11 @@
                     <fieldset class="graphShape">
                         <b>그래프 모양</b>
                         <div>
-                            <input type="radio" id="shape1" name="shape" value="1" checked>
+                            <input type="radio" id="shape1" name="shape" value="1" checked form="send_img">
                             <label for="shape1">연속</label>
                         </div>
                         <div>
-                            <input type="radio" id="shape2" name="shape" value="2">
+                            <input type="radio" id="shape2" name="shape" value="2" form="send_img">
                             <label for="shape2">연도</label>
                         </div>
                     </fieldset>
