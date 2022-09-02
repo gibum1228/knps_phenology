@@ -261,7 +261,6 @@ def model_compare():
     max_r2 = r2.max(axis=1)
     min_rmse = rmse.min(axis=1)
     min_mape = mape.min(axis=1)
-
     max_r2_idx = r2.idxmax(axis=1)
     min_rmse_idx = rmse.idxmin(axis=1)
     min_mape_idx = mape.idxmin(axis=1)
