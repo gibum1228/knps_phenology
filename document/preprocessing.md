@@ -104,5 +104,5 @@ mn : min EVI, mx : max EVI, sos(start of season) : 증가 변곡점, rsp : sos�
 
 ## gaussian_func
 매개변수 : (data_input : pd.DataFrame, start_year : integer, end_year : integer, ori_db : dict) 
-기능 : Gaussian Filtering 연산 메소드
-리턴값 : (pd.DataFrame, list)
+기능 : Gaussian Filtering 연산 메소드  
+리턴값 : (pd.DataFrame, list)  
