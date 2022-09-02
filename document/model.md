@@ -23,60 +23,59 @@
 
 ## LSTM
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`속성` : hiddnen_dim, step, output_dim, layers, lstm, fc   
+`기능` : LSTM 네트워크 구조를 설정해주는 클래스      
 
 ## train_LSTM
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : model, train_df:pandas.DataFrame, num_epochs:int, verbose:int, patience:int   
+`기능` : 에포크마다 모델을 학습하는 메소드   
+`리턴값` : model, train_hist   
 
 ## split_data
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : df:pandas.DataFrame, steop:int, y_count:int   
+`기능` : 데이터를 스텝별로 나눠 학습 데이터와 테스트 데이터를 저장하는 메소드    
+`리턴값` : numpy.ndarray   
 
 ## fit_LSTM
 
-`매개변수` : 없음
-`기능` :    
-`리턴값` :    
+`매개변수` : 없음   
+`기능` : LSTM을 학습하는 과정을 자동화한 메소드    
+`리턴값` : 없음   
 
 ## model_compare
 
-`매개변수` : 없음
-`기능` : 전체 모델별 r2, rmse, mape 비교하여 최적의 모델 선정하는 메소드
-`리턴값` : 없음
+`매개변수` : 없음   
+`기능` : 전체 모델별 r2, rmse, mape 비교하여 최적의 모델 선정하는 메소드   
+`리턴값` : 없음   
 
 ## arima
 
-`매개변수` : 없음   
-`기능` : ARIMA 모델을 사용하여 데이터를 학습 후 예측한 뒤 r2, rmse, mape 계산하는 메소드
-`리턴값` : 없음
+`매개변수` : 없음    
+`기능` : ARIMA 모델을 사용하여 데이터를 학습 후 예측한 뒤 r2, rmse, mape 계산하는 메소드   
+`리턴값` : 없음   
 
 ## MSE
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : y:numpy.ndarray, pred_y.ndarray    
+`기능` : 평균 제곱 오차 구하는 메소드    
+`리턴값` : ndarray     
 
 ## RMSE
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : y:numpy.ndarray, pred_y.ndarray    
+`기능` : 평균 제곱근 편차 구하는 메소드   
+`리턴값` : ndarray   
 
 ## R^2
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : y:numpy.ndarray, pred_y.ndarray    
+`기능` : 결정계수 구하는 메소드   
+`리턴값` : ndarray   
 
 ## MAPE
 
-`매개변수` :    
-`기능` :    
-`리턴값` :    
+`매개변수` : y:numpy.ndarray, pred_y.ndarray    
+`기능` : 평균 절대비오차 구하는    
+`리턴값` : ndarray   
