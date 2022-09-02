@@ -8,6 +8,8 @@
 4. [get_Feb_day()](#get_Feb_day)
 5. [adf_test()](#adf_test)
 6. [kpss_test()](#kpss_test)
+7. [show_data_distribution()](#show_data_distribution)
+8. [show_acf_pacf_plot()](#show_acf_pacf_plot)
 
 ## show_graph
 
@@ -44,3 +46,15 @@
 `매개변수`:   
 `기능`:   
 `리턴값`:   
+
+## show_data_distribution
+
+`매개변수`: 없음     
+`기능`: 전체 및 산림별 데이터에 대한 기술통계량 확인 및 Boxplot을 통한 연도별 EVI 분포 확인하는 메소드  
+`리턴값`: 없음  
+
+## show_acf_pacf_plot
+
+`매개변수`: 없음   
+`기능`: 특정 국립공원의 활엽수림 시계열 데이터 대한 ACF과 PACF 확인하는 메소드. 이를 통해 정상성 여부 및 ARIMA 파라미터인 p,d,q 값 추론   
+`리턴값`: 없음  
