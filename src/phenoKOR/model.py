@@ -1,14 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import torch
 from prophet import Prophet
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
 from torch.utils.data import DataLoader  # 데이터로더
 from torch.utils.data import TensorDataset  # 텐서데이터셋
 
@@ -326,95 +322,3 @@ def arima():
 
     df = pd.DataFrame({'park': code, 'class': cls, 'R2': R2_list, 'RMSE': RMSE_list, 'MAPE': MAPE_list})
     df.to_csv(f"{ROOT}data{MIDDLE}arima_final.csv")
-
-
-def plot_decompose(result):
-    '''
-    시계열 분석 그래프가 너무 작게 보여서 subplot으로 크게 보이게 하는 함수
-    '''
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(15, 8))
-    result.observed.plot(legend=False, ax=ax1)
-    ax1.set_ylabel('Observed')
-    result.trend.plot(legend=False, ax=ax2)
-    ax2.set_ylabel('Trend')
-    result.seasonal.plot(legend=False, ax=ax3)
-    ax3.set_ylabel('Seasonal')
-    result.resid.plot(legend=False, ax=ax4)
-    ax4.set_ylabel('Residual')
-
-
-def serial_compose(data_input):
-    '''
-    시계열 분해를 통해 시계열 데이터의 추세, 계절성, 주기를 확인하고자 한다.
-    '''
-    df = data_input[['date', 'avg']]
-    df.index = df.date
-    ts = df.drop("date", axis=1)
-
-    result = seasonal_decompose(ts, model='additive', period=46)
-
-    plot_decompose(result)
-
-
-# 전체 및 산림별 데이터 분포 확인하는 메서드
-def show_data_distribution():
-    # 전체 데이터 확인
-    data = preprocessing.get_final_data(all=True)
-    data['date'] = pd.to_datetime(data['date'])  # date 칼럼을 날짜 형식으로 변환
-
-    # 전체 데이터 기술통계량 확인
-    print('Descriptive Statistic of All \n', data['avg'].describe())
-
-    # 전체 데이터에 대한 Boxplot (연도별 EVI 분포 확인)
-    plt.figure(figsize=(10, 7))
-    p = sns.boxplot(y=data['avg'], x=data['date'].dt.year, palette='Spectral')
-    p.set_title('Boxplot of Each Years', fontsize=20)
-    p.set_ylabel('EVI', fontsize=15)
-    p.set_xlabel('Year', fontsize=15)
-    plt.show()
-
-    # 산림별 데이터 특징 확인
-    class_name = ['grassland', 'coniferous', 'broadleaved', 'mixed']
-    for i in range(4):
-        data_class = data[data['class'] == i]  # 특정 산림에 대한 데이터 프레임 생성
-
-        # 특정 산림 기술통계량 확인
-        print(f'Descriptive Statistic of ({class_name[i].capitalize()}) \n', data_class['avg'].describe())
-
-        # 특정 산림 데이터에 대한 Boxplot (연도별 EVI 분포 확인)
-        plt.figure(figsize=(10, 7))
-        p = sns.boxplot(y=data_class['avg'], x=data_class['date'].dt.year, palette='Spectral')
-        p.set_title(f'Boxplot of Each Years ({class_name[i].capitalize()})', fontsize=20)
-        p.set_ylabel('EVI', fontsize=15)
-        p.set_xlabel('Year', fontsize=15)
-        plt.show()
-
-
-# 시계열 데이터에서 ACF와 PACF 확인
-# ACF를 통해 정상성 시계열이 아닌 것을 확인 -> 정상 시계열로 만들기 위해 차분 필요성 확인
-# PACF를 통해 AR 모형임을 확인, ARIMA의 p값을 2로 설정
-def show_acf_pacf_plot():
-    # 확인할 특정 국립공원 선정
-    parks = ['mudeung', 'wolchul', 'juwang', 'taean', 'halla', 'dadohae']
-    for park in parks:
-        data = preprocessing.get_final_data(all=True)
-        data = data[(data['code'] == f'{park}') & (data['class'] == 2)]  # 각 국립공원 중 활엽수림 확인
-        data['date'] = pd.to_datetime(data['date'])  # 시계열 분석을 위해 index를 날짜형으로 변경
-
-        # 2019년 이하 연도를 train 설정
-        train = data[data['date'].dt.year <= 2019]
-        train.index = train['date']
-        train = train.loc[:, 'avg']
-
-        # ACF & PACF Plot
-        fig = plt.figure()
-        fig.subplots_adjust(hspace=0.5)
-
-        ax1 = fig.add_subplot(2, 1, 1)
-        ax2 = fig.add_subplot(2, 1, 2)
-
-        plot_acf(train, ax=ax1)
-        plot_pacf(train, ax=ax2)
-
-        plt.suptitle(f'{park.capitalize()}', fontsize=20)
-        plt.show()
