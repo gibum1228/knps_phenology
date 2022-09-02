@@ -37,15 +37,15 @@
 
 ## adf_test
 
-`매개변수`: timeseries:pandas.DataFrame 
-`기능`: 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단 메소드
-`리턴값`: Test Statistic, p-value, Lags Used, Number of Observations Used
+`매개변수`: timeseries:pandas.DataFrame    
+`기능`: 시계열에 단위근이 존재하는지의 여부 검정함으로써 정상 시계열인지 여부 판단 메소드   
+`리턴값`: int, int, int, int   
 
 ## kpss_test
 
-`매개변수`: timeseries:pandas.DataFrame
-`기능`:  시계열이 정상성인지 판정하는 메소드
-`리턴값`: Test Statistic, p-value, Lags Used, Number of Observations Used
+`매개변수`: timeseries:pandas.DataFrame   
+`기능`:  시계열이 정상성인지 판정하는 메소드   
+`리턴값`: int, int, int, int   
 
 ## show_data_distribution
 
