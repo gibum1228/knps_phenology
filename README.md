@@ -89,11 +89,11 @@ python manage.py runserver
 <br><br>
 ## 5. 위대한 레인저들
 - 레인저스(Rangers)
-  - [강유빈](https://github.com/yubbi4)
-  - [김기범](https://github.com/gibum1228)
-  - [안형주](https://github.com/HyungjooAhn1)
-  - [정호찬](https://github.com/Eumgill98)
-  - [주세현](https://github.com/shjoo0407)
+  - 강유빈([깃허브](https://github.com/yubbi4), [링크드인](https://www.linkedin.com/in/kangu203/))
+  - 김기범([깃허브](https://github.com/gibum1228), [링크드인](https://www.linkedin.com/in/beom3s/))
+  - 안형주([깃허브](https://github.com/HyungjooAhn1), [링크드인](https://www.linkedin.com/in/hyungjooahn/))
+  - 정호찬([깃허브](https://github.com/Eumgill98), [링크드인](https://www.linkedin.com/in/eumgill98/))
+  - 주세현([깃허브](https://github.com/shjoo0407), [링크드인](https://www.linkedin.com/in/shjoo0407/))
    
 - 경남대학교 빅리더 AI 아카데미
   - 전종식 교수님
